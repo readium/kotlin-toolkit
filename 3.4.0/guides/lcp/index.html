@@ -1,0 +1,1375 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Readium Mobile is a toolkit for ebooks, audiobooks and comics written in Swift & Kotlin.">
+      
+      
+        <meta name="author" content="Readium Foundation">
+      
+      
+        <link rel="canonical" href="https://github.com/readium/kotlin-toolkit/3.4.0/guides/lcp/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Supporting Readium LCP - Readium Kotlin</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../readium_colors.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#supporting-readium-lcp" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Readium Kotlin" class="md-header__button md-logo" aria-label="Readium Kotlin" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Readium Kotlin
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Supporting Readium LCP
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/readium/kotlin-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kotlin-toolkit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../migration-guide/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Migration Guide
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../api/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../getting-started/" class="md-tabs__link">
+          
+  
+  
+  User Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Readium Kotlin" class="md-nav__button md-logo" aria-label="Readium Kotlin" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Readium Kotlin
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/readium/kotlin-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kotlin-toolkit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migration Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extracting the content of a publication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../open-publication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Opening a publication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../navigator/navigator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Navigator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../navigator/web-navigators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web navigators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../navigator/media-navigator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Media navigator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../navigator/preferences/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Navigator preferences
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../navigator/epub-fonts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EPUB font families
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pdf/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PDF support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Text-to-speech
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../accessibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Accessibility
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/lcp.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LCP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setup
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#file-formats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File formats
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#initializing-the-lcpservice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Initializing the LcpService
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#acquiring-a-publication-from-a-license-document-lcpl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acquiring a publication from a License Document (LCPL)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Acquiring a publication from a License Document (LCPL)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-a-custom-download-manager" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using a custom download manager
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opening-a-publication-protected-with-lcp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Opening a publication protected with LCP
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Opening a publication protected with LCP">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#initializing-the-publicationopener" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Initializing the PublicationOpener
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setting-up-the-lcpdialogauthentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setting up the LcpDialogAuthentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#opening-the-publication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Opening the publication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-the-opened-publication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using the opened Publication
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#streaming-an-lcp-protected-package" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Streaming an LCP protected package
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#obtaining-information-on-an-lcp-license" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Obtaining information on an LCP license
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#managing-a-loan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Managing a loan
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Managing a loan">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#returning-a-loan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returning a loan
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#renewing-a-loan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Renewing a loan
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#handling-lcperror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Handling LcpError
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="supporting-readium-lcp">Supporting Readium LCP<a class="headerlink" href="#supporting-readium-lcp" title="Permanent link">&para;</a></h1>
+<p>You can use the Readium Kotlin toolkit to download and read publications that are protected with the <a href="https://www.edrlab.org/readium-lcp/">Readium LCP</a> DRM.</p>
+<p>:point_up: To use LCP with the Readium toolkit, you must first obtain the <code>liblcp</code> private library by contacting <a href="https://www.edrlab.org/contact/">EDRLab</a>.</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>An LCP publication is protected with a <em>user passphrase</em> and distributed using an LCP License Document (<code>.lcpl</code>) .</p>
+<p>The user flow typically goes as follows:</p>
+<ol>
+<li>The user imports a <code>.lcpl</code> file into your application.</li>
+<li>The application uses the Readium toolkit to download the protected publication from the <code>.lcpl</code> file to the user's bookshelf. The downloaded file can be a <code>.epub</code>, <code>.lcpdf</code> (PDF), or <code>.lcpa</code> (audiobook) package.</li>
+<li>The user opens the protected publication from the bookshelf.</li>
+<li>If the passphrase isn't already recorded in the <code>readium-lcp</code> internal database, the user will be asked to enter it to unlock the contents.</li>
+<li>The publication is decrypted and rendered on the screen.</li>
+</ol>
+<h2 id="setup">Setup<a class="headerlink" href="#setup" title="Permanent link">&para;</a></h2>
+<p>To support LCP in your application, you require two components:</p>
+<ul>
+<li>The <code>readium-lcp</code> module from the toolkit provides APIs for downloading and decrypting protected publications. Import it as you would any other Readium module, such as <code>readium-navigator</code>.</li>
+<li>The private <code>liblcp</code> library customized for your application <a href="https://www.edrlab.org/contact/">is available from EDRLab</a>. They will provide instructions for integrating the <code>liblcp</code> library into your application.</li>
+</ul>
+<h3 id="file-formats">File formats<a class="headerlink" href="#file-formats" title="Permanent link">&para;</a></h3>
+<p>Readium LCP specifies new file formats.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>File extension</th>
+<th>Media type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://readium.org/lcp-specs/releases/lcp/latest.html#32-content-conformance">License Document</a></td>
+<td><code>.lcpl</code></td>
+<td><code>application/vnd.readium.lcp.license.v1.0+json</code></td>
+</tr>
+<tr>
+<td><a href="https://readium.org/lcp-specs/notes/lcp-for-pdf.html">LCP for PDF package</a></td>
+<td><code>.lcpdf</code></td>
+<td><code>application/pdf+lcp</code></td>
+</tr>
+<tr>
+<td><a href="https://readium.org/lcp-specs/notes/lcp-for-audiobooks.html">LCP for Audiobooks package</a></td>
+<td><code>.lcpa</code></td>
+<td><code>application/audiobook+lcp</code></td>
+</tr>
+</tbody>
+</table>
+<p>:point_up: EPUB files protected by LCP are supported without a special file extension or media type because EPUB accommodates any DRM scheme in its specification.</p>
+<p>You may want to register these new file extensions and media types in the <a href="https://developer.android.com/guide/components/intents-filters">intent filters</a> of your <code>AndroidManifest.xml</code>.</p>
+<h2 id="initializing-the-lcpservice">Initializing the <code>LcpService</code><a class="headerlink" href="#initializing-the-lcpservice" title="Permanent link">&para;</a></h2>
+<p><code>readium-lcp</code> offers an <code>LcpService</code> object that exposes its API. If <code>liblcp</code> is not configured correctly in your application, the constructor will return <code>null</code>. This is helpful if your application has build variants without LCP.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">lcpService</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LcpService</span><span class="p">(</span>
+<span class="w">    </span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">,</span>
+<span class="w">    </span><span class="n">assetRetriever</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AssetRetriever</span><span class="p">(</span>
+<span class="w">        </span><span class="n">contentResolver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">contentResolver</span><span class="p">,</span>
+<span class="w">        </span><span class="n">httpClient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DefaultHttpClient</span><span class="p">()</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="p">)</span><span class="w"> </span><span class="o">?:</span><span class="w"> </span><span class="n">error</span><span class="p">(</span><span class="s">"liblcp is missing on the classpath"</span><span class="p">)))</span>
+</code></pre></div>
+<h2 id="acquiring-a-publication-from-a-license-document-lcpl">Acquiring a publication from a License Document (LCPL)<a class="headerlink" href="#acquiring-a-publication-from-a-license-document-lcpl" title="Permanent link">&para;</a></h2>
+<p>Users need to import a License Document into your application to download the protected publication (<code>.epub</code>, <code>.lcpdf</code>, or <code>.lcpa</code>).</p>
+<p>The <code>LcpService</code> offers an API to retrieve the full publication from an LCPL on the filesystem.</p>
+<div class="highlight"><pre><span></span><code><span class="n">let</span><span class="w"> </span><span class="n">acquisition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lcpService</span><span class="p">.</span><span class="na">acquirePublication</span><span class="p">(</span>
+<span class="w">    </span><span class="n">lcpl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">File</span><span class="p">(</span><span class="s">"path/to/license.lcpl"</span><span class="p">),</span>
+<span class="w">    </span><span class="n">onProgress</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">progress</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">        </span><span class="n">print</span><span class="p">(</span><span class="kt">String</span><span class="p">.</span><span class="na">format</span><span class="p">(</span><span class="s">"Downloaded %.1f%%"</span><span class="p">,</span><span class="w"> </span><span class="n">progress</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="m">100</span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">).</span><span class="na">getOrElse</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* Failed to download the protected publication */</span><span class="w"> </span><span class="p">}</span>
+
+<span class="n">print</span><span class="p">(</span><span class="s">"The publication was downloaded at </span><span class="si">${</span><span class="n">acquisition</span><span class="p">.</span><span class="na">localFile</span><span class="si">}</span><span class="s">, its type is </span><span class="si">${</span><span class="n">acquisition</span><span class="p">.</span><span class="na">format</span><span class="p">.</span><span class="na">mediaType</span><span class="si">}</span><span class="s">."</span><span class="p">)</span>
+</code></pre></div>
+<p>After the download is completed, import the <code>acquisition.localFile</code> file into the bookshelf like any other publication file.</p>
+<h3 id="using-a-custom-download-manager">Using a custom download manager<a class="headerlink" href="#using-a-custom-download-manager" title="Permanent link">&para;</a></h3>
+<p>If you want more control over the acquisition process, you can download the publication manually instead.</p>
+<p>The acquisition is done in three steps:</p>
+<ol>
+<li>Parse the License Document (LCPL) file.</li>
+<li>Download the protected publication.</li>
+<li>Inject the LCPL into the downloaded package.</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">lcplBytes</span><span class="p">:</span><span class="w"> </span><span class="n">ByteArray</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">...</span>
+
+<span class="kd">val</span><span class="w"> </span><span class="nv">licenseDocument</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LicenseDocument</span><span class="p">.</span><span class="na">fromBytes</span><span class="p">(</span><span class="n">lcplBytes</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">getOrElse</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* The LCPL appears to be invalid */</span><span class="w"> </span><span class="p">}</span>
+
+
+<span class="kd">val</span><span class="w"> </span><span class="nv">publicationLink</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">licenseDocument</span><span class="p">.</span><span class="na">publicationLink</span>
+
+<span class="kd">val</span><span class="w"> </span><span class="nv">downloadedFile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">yourDownloadService</span><span class="p">.</span><span class="na">download</span><span class="p">(</span><span class="n">publicationLink</span><span class="p">.</span><span class="na">url</span><span class="p">())</span>
+<span class="w">    </span><span class="p">.</span><span class="na">getOrElse</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* Failed to download the protected publication */</span><span class="w"> </span><span class="p">}</span>
+
+<span class="n">lcpService</span><span class="p">.</span><span class="na">injectLicenseDocument</span><span class="p">(</span><span class="n">licenseDocument</span><span class="p">,</span><span class="w"> </span><span class="n">downloadedFile</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">getOrElse</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* Failed to inject the LCPL in the downloaded package */</span><span class="w"> </span><span class="p">}</span>
+
+<span class="c1">// The downloaded file is now ready to be imported in your bookshelf as usual.</span>
+</code></pre></div>
+<h2 id="opening-a-publication-protected-with-lcp">Opening a publication protected with LCP<a class="headerlink" href="#opening-a-publication-protected-with-lcp" title="Permanent link">&para;</a></h2>
+<h3 id="initializing-the-publicationopener">Initializing the <code>PublicationOpener</code><a class="headerlink" href="#initializing-the-publicationopener" title="Permanent link">&para;</a></h3>
+<p>A publication protected with LCP can be opened using the <code>PublicationOpener</code> component, just like a non-protected publication. However, you must provide a <a href="https://readium.org/architecture/proposals/006-content-protection.html"><code>ContentProtection</code></a> implementation when initializing the <code>PublicationOpener</code> to enable LCP. Luckily, <code>LcpService</code> has you covered.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">authentication</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LcpDialogAuthentication</span><span class="p">()</span>
+
+<span class="kd">val</span><span class="w"> </span><span class="nv">publicationOpener</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PublicationOpener</span><span class="p">(</span>
+<span class="w">    </span><span class="n">publicationParser</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DefaultPublicationParser</span><span class="p">(),</span>
+<span class="w">    </span><span class="n">contentProtections</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span>
+<span class="w">        </span><span class="n">lcpService</span><span class="p">.</span><span class="na">contentProtection</span><span class="p">(</span><span class="n">authentication</span><span class="p">)</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>An LCP package is secured with a <em>user passphrase</em> for decrypting the content. The <code>LcpAuthenticating</code> interface expected by <code>LcpService.contentProtection()</code> provides the passphrase when needed. You can use the default <code>LcpDialogAuthentication</code> which displays a pop-up to enter the passphrase, or implement your own method for passphrase retrieval. If you already fetched the passphrase from a backend server, you can also use <code>LcpPassphraseAuthentication(passphrase)</code>.</p>
+<p>:point_up: The user will be prompted once per passphrase since <code>readium-lcp</code> stores known passphrases on the device. </p>
+<h3 id="setting-up-the-lcpdialogauthentication">Setting up the <code>LcpDialogAuthentication</code><a class="headerlink" href="#setting-up-the-lcpdialogauthentication" title="Permanent link">&para;</a></h3>
+<p>For <code>LcpDialogAuthentication</code> to function correctly, it needs to identify the host view displaying the dialog. You must indicate the host view, for example using a <code>View.OnAttachStateChangeListener</code> in your bookshelf fragment.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">class</span><span class="w"> </span><span class="nc">MyFragment</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Fragment</span><span class="w"> </span><span class="p">{</span>
+
+<span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">inner</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">OnViewAttachedListener</span><span class="p">(</span>
+<span class="w">        </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">authentication</span><span class="p">:</span><span class="w"> </span><span class="n">LcpDialogAuthentication</span>
+<span class="w">    </span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">View</span><span class="p">.</span><span class="na">OnAttachStateChangeListener</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">onViewAttachedToWindow</span><span class="p">(</span><span class="n">view</span><span class="p">:</span><span class="w"> </span><span class="n">View</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">authentication</span><span class="p">.</span><span class="na">onParentViewAttachedToWindow</span><span class="p">(</span><span class="n">view</span><span class="p">)</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">onViewDetachedFromWindow</span><span class="p">(</span><span class="n">view</span><span class="p">:</span><span class="w"> </span><span class="n">View</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">authentication</span><span class="p">.</span><span class="na">onParentViewDetachedFromWindow</span><span class="p">()</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">onViewAttachedListener</span><span class="p">:</span><span class="w"> </span><span class="n">OnViewAttachedListener</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OnViewAttachedListener</span><span class="p">(</span>
+<span class="w">        </span><span class="c1">// Use your shared instance here.</span>
+<span class="w">        </span><span class="n">lcpDialogAuthentication</span>
+<span class="w">    </span><span class="p">)</span>
+
+<span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">onViewCreated</span><span class="p">(</span><span class="n">view</span><span class="p">:</span><span class="w"> </span><span class="n">View</span><span class="p">,</span><span class="w"> </span><span class="n">savedInstanceState</span><span class="p">:</span><span class="w"> </span><span class="n">Bundle?</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">super</span><span class="p">.</span><span class="na">onViewCreated</span><span class="p">(</span><span class="n">view</span><span class="p">,</span><span class="w"> </span><span class="n">savedInstanceState</span><span class="p">)</span>
+
+<span class="w">        </span><span class="n">view</span><span class="p">.</span><span class="na">addOnAttachStateChangeListener</span><span class="p">(</span><span class="n">onViewAttachedListener</span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="opening-the-publication">Opening the publication<a class="headerlink" href="#opening-the-publication" title="Permanent link">&para;</a></h3>
+<p>You are now ready to open the publication file with your <code>PublicationOpener</code> instance.</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Retrieve an `Asset` to access the file content.</span>
+<span class="kd">val</span><span class="w"> </span><span class="nv">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">File</span><span class="p">(</span><span class="s">"/path/to/lcp-protected-book.epub"</span><span class="p">).</span><span class="na">toUrl</span><span class="p">()</span>
+<span class="kd">val</span><span class="w"> </span><span class="nv">asset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">assetRetriever</span><span class="p">.</span><span class="na">retrieve</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">getOrElse</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* Failed to retrieve the Asset */</span><span class="w"> </span><span class="p">}</span>
+
+<span class="c1">// Open a `Publication` from the `Asset`.</span>
+<span class="kd">val</span><span class="w"> </span><span class="nv">publication</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">publicationOpener</span><span class="p">.</span><span class="na">open</span><span class="p">(</span><span class="n">asset</span><span class="p">,</span><span class="w"> </span><span class="n">allowUserInteraction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">getOrElse</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* Failed to access or parse the publication */</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<p>The <code>allowUserInteraction</code> argument is forwarded to the <code>LcpAuthenticating</code> implementation when the passphrase is unknown. <code>LcpDialogAuthentication</code> shows a pop-up only if <code>allowUserInteraction</code> is <code>true</code>.</p>
+<p>When importing the publication to the bookshelf, set <code>allowUserInteraction</code> to <code>false</code> as you don't need the passphrase for accessing the publication metadata and cover. If you intend to present the publication using a Navigator, set <code>allowUserInteraction</code> to <code>true</code> as decryption will be required.</p>
+<p>:point_up: To check if a publication is protected with LCP before opening it, you can use <code>asset.format.conformsTo(Specification.Lcp)</code> on the <code>Asset</code> returned by the <code>AssetRetriever</code>.</p>
+<h3 id="using-the-opened-publication">Using the opened <code>Publication</code><a class="headerlink" href="#using-the-opened-publication" title="Permanent link">&para;</a></h3>
+<p>After obtaining a <code>Publication</code> instance, you can access the publication's metadata to import it into the user's bookshelf. The user passphrase is not needed for reading the metadata or cover.</p>
+<p>However, if you want to display the publication with a Navigator, verify it is not restricted. It could be restricted if the user passphrase is unknown or if the license is no longer valid (e.g., expired loan, revoked purchase, etc.).</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">publication</span><span class="p">.</span><span class="na">isRestricted</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">publication</span><span class="p">.</span><span class="na">protectionError</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">error</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// The user is not allowed to open the publication. You should display the error.</span>
+<span class="w">        </span><span class="c1">// In the case of LCP, `error` will be an `LcpError`.</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// We don't have the user passphrase.</span>
+<span class="w">        </span><span class="c1">// You may use `publication` to access its metadata, but not to render its content.</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// The publication is not restricted, you may render it with a Navigator component.</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="streaming-an-lcp-protected-package">Streaming an LCP protected package<a class="headerlink" href="#streaming-an-lcp-protected-package" title="Permanent link">&para;</a></h2>
+<p>If the server hosting the LCP protected package supports <a href="https://httpwg.org/specs/rfc7233.html">HTTP Range requests</a>, it is possible to stream directly an LCP protected publication from a License Document (<code>.lcpl</code>) file, without downloading the whole publication first.</p>
+<p>Simply open the License Document directly using the <code>PublicationOpener</code>. Make sure you provide an <code>HttpClient</code> (or an <code>HttpResourceFactory</code> for additional customization) to the <code>AssetRetriever</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Instantiate the required components.</span>
+<span class="kd">val</span><span class="w"> </span><span class="nv">httpClient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DefaultHttpClient</span><span class="p">()</span>
+
+<span class="kd">val</span><span class="w"> </span><span class="nv">assetRetriever</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AssetRetriever</span><span class="p">(</span>
+<span class="w">    </span><span class="n">contentResolver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">contentResolver</span><span class="p">,</span>
+<span class="w">    </span><span class="n">httpClient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">httpClient</span>
+<span class="p">)</span>
+
+<span class="kd">val</span><span class="w"> </span><span class="nv">lcpService</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LcpService</span><span class="p">(</span>
+<span class="w">    </span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">,</span>
+<span class="w">    </span><span class="n">assetRetriever</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">assetRetriever</span>
+<span class="p">)</span><span class="w"> </span><span class="o">?:</span><span class="w"> </span><span class="n">error</span><span class="p">(</span><span class="s">"liblcp is missing on the classpath"</span><span class="p">)))</span>
+
+<span class="kd">val</span><span class="w"> </span><span class="nv">authentication</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LcpDialogAuthentication</span><span class="p">()</span>
+
+<span class="kd">val</span><span class="w"> </span><span class="nv">publicationOpener</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PublicationOpener</span><span class="p">(</span>
+<span class="w">    </span><span class="n">publicationParser</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DefaultPublicationParser</span><span class="p">(</span>
+<span class="w">        </span><span class="n">context</span><span class="p">,</span>
+<span class="w">        </span><span class="n">httpClient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">httpClient</span><span class="p">,</span>
+<span class="w">        </span><span class="n">assetRetriever</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">assetRetriever</span>
+<span class="w">    </span><span class="p">),</span>
+<span class="w">    </span><span class="n">contentProtections</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span>
+<span class="w">        </span><span class="n">lcpService</span><span class="p">.</span><span class="na">contentProtection</span><span class="p">(</span><span class="n">authentication</span><span class="p">)</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1">// Retrieve an `Asset` to access the LCPL content.</span>
+<span class="kd">val</span><span class="w"> </span><span class="nv">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">File</span><span class="p">(</span><span class="s">"/path/to/license.lcpl"</span><span class="p">).</span><span class="na">toUrl</span><span class="p">()</span>
+<span class="kd">val</span><span class="w"> </span><span class="nv">asset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">assetRetriever</span><span class="p">.</span><span class="na">retrieve</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">getOrElse</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* Failed to retrieve the Asset */</span><span class="w"> </span><span class="p">}</span>
+
+<span class="c1">// Open a `Publication` from the LCPL `Asset`.</span>
+<span class="kd">val</span><span class="w"> </span><span class="nv">publication</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">publicationOpener</span><span class="p">.</span><span class="na">open</span><span class="p">(</span><span class="n">asset</span><span class="p">,</span><span class="w"> </span><span class="n">allowUserInteraction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">getOrElse</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* Failed to access or parse the publication */</span><span class="w"> </span><span class="p">}</span>
+
+<span class="n">print</span><span class="p">(</span><span class="s">"Opened </span><span class="si">${</span><span class="n">publication</span><span class="p">.</span><span class="na">metadata</span><span class="p">.</span><span class="na">title</span><span class="si">}</span><span class="s">"</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="obtaining-information-on-an-lcp-license">Obtaining information on an LCP license<a class="headerlink" href="#obtaining-information-on-an-lcp-license" title="Permanent link">&para;</a></h2>
+<p>An LCP License Document contains metadata such as its expiration date, the remaining number of characters to copy and the user name. You can access this information using an <code>LcpLicense</code> object.</p>
+<p>Use the <code>LcpService</code> to retrieve the <code>LcpLicense</code> instance for a publication.</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Retrieve an `Asset` to access the file content.</span>
+<span class="kd">val</span><span class="w"> </span><span class="nv">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">File</span><span class="p">(</span><span class="s">"/path/to/lcp-protected-book.epub"</span><span class="p">).</span><span class="na">toUrl</span><span class="p">()</span>
+<span class="kd">val</span><span class="w"> </span><span class="nv">asset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">assetRetriever</span><span class="p">.</span><span class="na">retrieve</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">getOrElse</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* Failed to retrieve the Asset */</span><span class="w"> </span><span class="p">}</span>
+
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">asset</span><span class="p">.</span><span class="na">format</span><span class="p">.</span><span class="na">conformsTo</span><span class="p">(</span><span class="n">Specification</span><span class="p">.</span><span class="na">Lcp</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Not protected with LCP.</span>
+<span class="p">}</span>
+
+<span class="kd">val</span><span class="w"> </span><span class="nv">lcpLicense</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lcpService</span><span class="p">.</span><span class="na">retrieveLicense</span><span class="p">(</span>
+<span class="w">    </span><span class="n">asset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">asset</span><span class="p">,</span>
+<span class="w">    </span><span class="n">authentication</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">authenticaton</span><span class="p">,</span>
+<span class="w">    </span><span class="n">allowUserInteraction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="p">).</span><span class="na">getOrElse</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* Failed to retrieve the LCP License from the publication */</span><span class="w"> </span><span class="p">}</span>
+
+<span class="n">lcpLicense</span><span class="p">.</span><span class="na">license</span><span class="p">.</span><span class="na">user</span><span class="p">.</span><span class="na">name</span><span class="o">?.</span><span class="na">let</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">    </span><span class="n">print</span><span class="p">(</span><span class="s">"The publication was acquired by </span><span class="si">$</span><span class="n">user</span><span class="s">"</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">lcpLicense</span><span class="p">.</span><span class="na">license</span><span class="p">.</span><span class="na">rights</span><span class="p">.</span><span class="na">end</span><span class="o">?.</span><span class="na">let</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">endDate</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">    </span><span class="n">print</span><span class="p">(</span><span class="s">"The loan expires on </span><span class="si">$</span><span class="n">endDate</span><span class="s">"</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">lcpLicense</span><span class="p">.</span><span class="na">charactersToCopyLeft</span><span class="o">?.</span><span class="na">let</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">copyLeft</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">    </span><span class="n">print</span><span class="p">(</span><span class="s">"You can copy up to </span><span class="si">$</span><span class="n">copyLeft</span><span class="s"> characters remaining."</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>:point_up: If you have already opened a <code>Publication</code> with the <code>PublicationOpener</code>, you can directly obtain the <code>LcpLicense</code> using <code>publication.lcpLicense</code>.</p>
+<h2 id="managing-a-loan">Managing a loan<a class="headerlink" href="#managing-a-loan" title="Permanent link">&para;</a></h2>
+<p>Readium LCP allows borrowing publications for a specific period. Use the <code>LcpLicense</code> object to manage a loan and retrieve its end date using <code>lcpLicense.license.rights.end</code>.</p>
+<h3 id="returning-a-loan">Returning a loan<a class="headerlink" href="#returning-a-loan" title="Permanent link">&para;</a></h3>
+<p>Some loans can be returned before the end date. You can confirm this by using <code>lcpLicense.canReturnPublication</code>. To return the publication, execute:</p>
+<div class="highlight"><pre><span></span><code><span class="n">lcpLicense</span><span class="p">.</span><span class="na">returnPublication</span><span class="p">()</span>
+<span class="w">    </span><span class="p">.</span><span class="na">onFailure</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* Failed to return the publication */</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<h3 id="renewing-a-loan">Renewing a loan<a class="headerlink" href="#renewing-a-loan" title="Permanent link">&para;</a></h3>
+<p>The loan end date may also be extended. You can confirm this by using <code>lcpLicense.canRenewLoan</code>.</p>
+<p>Readium LCP supports <a href="https://readium.org/lcp-specs/releases/lsd/latest#35-renewing-a-license">two types of renewal interactions</a>:</p>
+<ul>
+<li>Programmatic: You show your own user interface.</li>
+<li>Interactive: You display a web view, and the Readium LSD server manages the renewal for you.</li>
+</ul>
+<p>You need to support both interactions by implementing the <code>LcpLicense.RenewListener</code> interface. A default Material Design implementation is available with <code>MaterialRenewListener</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">renewListener</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MaterialRenewListener</span><span class="p">(</span>
+<span class="w">    </span><span class="n">license</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lcpLicense</span><span class="p">,</span>
+<span class="w">    </span><span class="n">caller</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hostFragment</span><span class="p">,</span>
+<span class="w">    </span><span class="n">fragmentManager</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hostFragment</span><span class="p">.</span><span class="na">childFragmentManager</span>
+<span class="p">)</span>
+
+<span class="n">lcpLicense</span><span class="p">.</span><span class="na">renewLoan</span><span class="p">(</span><span class="n">renewListener</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">onFailure</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* Failed to extend the loan end date */</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<h2 id="handling-lcperror">Handling <code>LcpError</code><a class="headerlink" href="#handling-lcperror" title="Permanent link">&para;</a></h2>
+<p>The APIs may fail with an <code>LcpError</code>. These errors <strong>must</strong> be displayed to the user with a suitable message.</p>
+<p>For an example, take a look at <a href="../../test-app/src/main/java/org/readium/r2/testapp/domain/LcpUserError.kt"><code>LcpUserError.kt</code></a> in the Test App.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 Readium Foundation
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.path"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

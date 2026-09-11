@@ -1,0 +1,310 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>FixedWebRenditionController</title>
+<link href="../../../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../../../../index.html" tabindex="1">
+                    Readium
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":readium:navigators:web:readium-navigator-web-fixedlayout/release">release</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":readium:navigators:web:readium-navigator-web-fixedlayout/release" data-filter=":readium:navigators:web:readium-navigator-web-fixedlayout/release">
+                                <span class="checkbox--icon"></span>
+                                release
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Readium
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="readium-navigator-web-fixedlayout::org.readium.navigator.web.fixedlayout/FixedWebRenditionController///PointingToDeclaration//-1303764576">
+  <div class="breadcrumbs"><a href="../../index.html">readium-navigator-web-fixedlayout</a><span class="delimiter">/</span><a href="../index.html">org.readium.navigator.web.fixedlayout</a><span class="delimiter">/</span><span class="current">FixedWebRenditionController</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Fixed</span><wbr><span>Web</span><wbr><span>Rendition</span><wbr><span><span>Controller</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:web:readium-navigator-web-fixedlayout/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/compose/runtime/Stable.html"><span class="token annotation builtin">Stable</span></a></div></div><span class="token keyword">class </span><a href="index.html">FixedWebRenditionController</a> : <a href="../../../../../../readium/navigators/readium-navigator-common/org.readium.navigator.common/-navigation-controller/index.html">NavigationController</a><span class="token operator">&lt;</span><a href="../-fixed-web-location/index.html">FixedWebLocation</a><span class="token punctuation">, </span><a href="../-fixed-web-go-location/index.html">FixedWebGoLocation</a><span class="token operator">&gt; </span>, <a href="../../../../../../readium/navigators/readium-navigator-common/org.readium.navigator.common/-overflow-controller/index.html">OverflowController</a>, <a href="../../../../../../readium/navigators/readium-navigator-common/org.readium.navigator.common/-preferences-controller/index.html">PreferencesController</a><span class="token operator">&lt;</span><a href="../../org.readium.navigator.web.fixedlayout.preferences/-fixed-web-preferences/index.html">FixedWebPreferences</a><span class="token punctuation">, </span><a href="../../org.readium.navigator.web.fixedlayout.preferences/-fixed-web-settings/index.html">FixedWebSettings</a><span class="token operator">&gt; </span>, <a href="../../../../../../readium/navigators/readium-navigator-common/org.readium.navigator.common/-selection-controller/index.html">SelectionController</a><span class="token operator">&lt;</span><a href="../-fixed-web-selection-location/index.html">FixedWebSelectionLocation</a><span class="token operator">&gt; </span>, <a href="../../../../../../readium/navigators/readium-navigator-common/org.readium.navigator.common/-decoration-controller/index.html">DecorationController</a><span class="token operator">&lt;</span><a href="../-fixed-web-decoration-location/index.html">FixedWebDecorationLocation</a><span class="token operator">&gt; </span></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="-383009206%2FProperties%2F-1303764576" anchor-label="canMoveBackward" id="-383009206%2FProperties%2F-1303764576" data-filterable-set=":readium:navigators:web:readium-navigator-web-fixedlayout/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:web:readium-navigator-web-fixedlayout/release" data-filterable-set=":readium:navigators:web:readium-navigator-web-fixedlayout/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-383009206%2FProperties%2F-1303764576"><span>can</span><wbr><span>Move</span><wbr><span><span>Backward</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-383009206%2FProperties%2F-1303764576"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:web:readium-navigator-web-fixedlayout/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="index.html#-383009206%2FProperties%2F-1303764576">canMoveBackward</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="780342664%2FProperties%2F-1303764576" anchor-label="canMoveForward" id="780342664%2FProperties%2F-1303764576" data-filterable-set=":readium:navigators:web:readium-navigator-web-fixedlayout/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:web:readium-navigator-web-fixedlayout/release" data-filterable-set=":readium:navigators:web:readium-navigator-web-fixedlayout/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#780342664%2FProperties%2F-1303764576"><span>can</span><wbr><span>Move</span><wbr><span><span>Forward</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="780342664%2FProperties%2F-1303764576"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:web:readium-navigator-web-fixedlayout/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="index.html#780342664%2FProperties%2F-1303764576">canMoveForward</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="296672829%2FProperties%2F-1303764576" anchor-label="decorations" id="296672829%2FProperties%2F-1303764576" data-filterable-set=":readium:navigators:web:readium-navigator-web-fixedlayout/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:web:readium-navigator-web-fixedlayout/release" data-filterable-set=":readium:navigators:web:readium-navigator-web-fixedlayout/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#296672829%2FProperties%2F-1303764576"><span><span>decorations</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="296672829%2FProperties%2F-1303764576"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:web:readium-navigator-web-fixedlayout/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">var </span><a href="index.html#296672829%2FProperties%2F-1303764576">decorations</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.collections.immutable/PersistentMap///PointingToDeclaration/">PersistentMap</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span data-unresolved-link="kotlinx.collections.immutable/PersistentList///PointingToDeclaration/">PersistentList</span><span class="token operator">&lt;</span><a href="../../../../../../readium/navigators/readium-navigator-common/org.readium.navigator.common/-decoration/index.html">Decoration</a><span class="token operator">&lt;</span><a href="../-fixed-web-decoration-location/index.html">FixedWebDecorationLocation</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-468127479%2FProperties%2F-1303764576" anchor-label="location" id="-468127479%2FProperties%2F-1303764576" data-filterable-set=":readium:navigators:web:readium-navigator-web-fixedlayout/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:web:readium-navigator-web-fixedlayout/release" data-filterable-set=":readium:navigators:web:readium-navigator-web-fixedlayout/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-468127479%2FProperties%2F-1303764576"><span><span>location</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-468127479%2FProperties%2F-1303764576"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:web:readium-navigator-web-fixedlayout/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="index.html#-468127479%2FProperties%2F-1303764576">location</a><span class="token operator">: </span><a href="../-fixed-web-location/index.html">FixedWebLocation</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1120726454%2FProperties%2F-1303764576" anchor-label="overflow" id="-1120726454%2FProperties%2F-1303764576" data-filterable-set=":readium:navigators:web:readium-navigator-web-fixedlayout/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:web:readium-navigator-web-fixedlayout/release" data-filterable-set=":readium:navigators:web:readium-navigator-web-fixedlayout/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1120726454%2FProperties%2F-1303764576"><span><span>overflow</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1120726454%2FProperties%2F-1303764576"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:web:readium-navigator-web-fixedlayout/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="index.html#-1120726454%2FProperties%2F-1303764576">overflow</a><span class="token operator">: </span><a href="../../../../../../readium/navigators/readium-navigator-common/org.readium.navigator.common/-overflow/index.html">Overflow</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1659666144%2FProperties%2F-1303764576" anchor-label="preferences" id="-1659666144%2FProperties%2F-1303764576" data-filterable-set=":readium:navigators:web:readium-navigator-web-fixedlayout/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:web:readium-navigator-web-fixedlayout/release" data-filterable-set=":readium:navigators:web:readium-navigator-web-fixedlayout/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1659666144%2FProperties%2F-1303764576"><span><span>preferences</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1659666144%2FProperties%2F-1303764576"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:web:readium-navigator-web-fixedlayout/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">var </span><a href="index.html#-1659666144%2FProperties%2F-1303764576">preferences</a><span class="token operator">: </span><a href="../../org.readium.navigator.web.fixedlayout.preferences/-fixed-web-preferences/index.html">FixedWebPreferences</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2045065857%2FProperties%2F-1303764576" anchor-label="settings" id="-2045065857%2FProperties%2F-1303764576" data-filterable-set=":readium:navigators:web:readium-navigator-web-fixedlayout/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:web:readium-navigator-web-fixedlayout/release" data-filterable-set=":readium:navigators:web:readium-navigator-web-fixedlayout/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-2045065857%2FProperties%2F-1303764576"><span><span>settings</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2045065857%2FProperties%2F-1303764576"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:web:readium-navigator-web-fixedlayout/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="index.html#-2045065857%2FProperties%2F-1303764576">settings</a><span class="token operator">: </span><a href="../../org.readium.navigator.web.fixedlayout.preferences/-fixed-web-settings/index.html">FixedWebSettings</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="-1037664969%2FFunctions%2F-1303764576" anchor-label="clearSelection" id="-1037664969%2FFunctions%2F-1303764576" data-filterable-set=":readium:navigators:web:readium-navigator-web-fixedlayout/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:web:readium-navigator-web-fixedlayout/release" data-filterable-set=":readium:navigators:web:readium-navigator-web-fixedlayout/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1037664969%2FFunctions%2F-1303764576"><span>clear</span><wbr><span><span>Selection</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1037664969%2FFunctions%2F-1303764576"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:web:readium-navigator-web-fixedlayout/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-1037664969%2FFunctions%2F-1303764576"><span class="token function">clearSelection</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1127188259%2FFunctions%2F-1303764576" anchor-label="currentSelection" id="1127188259%2FFunctions%2F-1303764576" data-filterable-set=":readium:navigators:web:readium-navigator-web-fixedlayout/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:web:readium-navigator-web-fixedlayout/release" data-filterable-set=":readium:navigators:web:readium-navigator-web-fixedlayout/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1127188259%2FFunctions%2F-1303764576"><span>current</span><wbr><span><span>Selection</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1127188259%2FFunctions%2F-1303764576"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:web:readium-navigator-web-fixedlayout/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="index.html#1127188259%2FFunctions%2F-1303764576"><span class="token function">currentSelection</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../../../readium/navigators/readium-navigator-common/org.readium.navigator.common/-selection/index.html">Selection</a><span class="token operator">&lt;</span><a href="../-fixed-web-selection-location/index.html">FixedWebSelectionLocation</a><span class="token operator">&gt;</span><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-965314048%2FFunctions%2F-1303764576" anchor-label="goTo" id="-965314048%2FFunctions%2F-1303764576" data-filterable-set=":readium:navigators:web:readium-navigator-web-fixedlayout/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:web:readium-navigator-web-fixedlayout/release" data-filterable-set=":readium:navigators:web:readium-navigator-web-fixedlayout/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1780872415%2FFunctions%2F-1303764576"><span>go</span><wbr><span><span>To</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-965314048%2FFunctions%2F-1303764576"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:web:readium-navigator-web-fixedlayout/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="index.html#-1780872415%2FFunctions%2F-1303764576"><span class="token function">goTo</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">location<span class="token operator">: </span><a href="../-fixed-web-location/index.html">FixedWebLocation</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="index.html#-939049081%2FFunctions%2F-1303764576"><span class="token function">goTo</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">location<span class="token operator">: </span><a href="../-fixed-web-go-location/index.html">FixedWebGoLocation</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="index.html#1904264208%2FFunctions%2F-1303764576"><span class="token function">goTo</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">url<span class="token operator">: </span><a href="../../../../../../readium/readium-shared/org.readium.r2.shared.util/-url/index.html">Url</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="892791864%2FFunctions%2F-1303764576" anchor-label="moveBackward" id="892791864%2FFunctions%2F-1303764576" data-filterable-set=":readium:navigators:web:readium-navigator-web-fixedlayout/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:web:readium-navigator-web-fixedlayout/release" data-filterable-set=":readium:navigators:web:readium-navigator-web-fixedlayout/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#892791864%2FFunctions%2F-1303764576"><span>move</span><wbr><span><span>Backward</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="892791864%2FFunctions%2F-1303764576"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:web:readium-navigator-web-fixedlayout/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="index.html#892791864%2FFunctions%2F-1303764576"><span class="token function">moveBackward</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1652781530%2FFunctions%2F-1303764576" anchor-label="moveForward" id="1652781530%2FFunctions%2F-1303764576" data-filterable-set=":readium:navigators:web:readium-navigator-web-fixedlayout/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:web:readium-navigator-web-fixedlayout/release" data-filterable-set=":readium:navigators:web:readium-navigator-web-fixedlayout/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1652781530%2FFunctions%2F-1303764576"><span>move</span><wbr><span><span>Forward</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1652781530%2FFunctions%2F-1303764576"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:web:readium-navigator-web-fixedlayout/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="index.html#1652781530%2FFunctions%2F-1303764576"><span class="token function">moveForward</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

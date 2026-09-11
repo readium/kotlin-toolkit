@@ -1,0 +1,805 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>Companion</title>
+<link href="../../../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../../../../index.html" tabindex="1">
+                    Readium
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":readium:readium-shared/release">release</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":readium:readium-shared/release" data-filter=":readium:readium-shared/release">
+                                <span class="checkbox--icon"></span>
+                                release
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Readium
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="readium-shared::org.readium.r2.shared.publication/Accessibility.Feature.Companion///PointingToDeclaration//-1013710462">
+  <div class="breadcrumbs"><a href="../../../../index.html">readium-shared</a><span class="delimiter">/</span><a href="../../../index.html">org.readium.r2.shared.publication</a><span class="delimiter">/</span><a href="../../index.html">Accessibility</a><span class="delimiter">/</span><a href="../index.html">Feature</a><span class="delimiter">/</span><span class="current">Companion</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Companion</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="index.html">Companion</a></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="-1690468488%2FProperties%2F-1013710462" anchor-label="ALTERNATIVE_TEXT" id="-1690468488%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-l-t-e-r-n-a-t-i-v-e_-t-e-x-t.html"><span>ALTERNATIVE_</span><wbr><span>TEXT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1690468488%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-a-l-t-e-r-n-a-t-i-v-e_-t-e-x-t.html">ALTERNATIVE_TEXT</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Alternative text is provided for visual content (e.g., via the HTML <code class="lang-kotlin">alt</code> attribute).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1685739391%2FProperties%2F-1013710462" anchor-label="ANNOTATIONS" id="1685739391%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-n-n-o-t-a-t-i-o-n-s.html"><span><span>ANNOTATIONS</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1685739391%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-a-n-n-o-t-a-t-i-o-n-s.html">ANNOTATIONS</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">The work includes annotations from the author, instructor and/or others.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="797127502%2FProperties%2F-1013710462" anchor-label="ARIA" id="797127502%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-r-i-a.html"><span><span>ARIA</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="797127502%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-a-r-i-a.html">ARIA</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Indicates the resource includes ARIA roles to organize and improve the structure and navigation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1647720464%2FProperties%2F-1013710462" anchor-label="AUDIO_DESCRIPTION" id="1647720464%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-u-d-i-o_-d-e-s-c-r-i-p-t-i-o-n.html"><span>AUDIO_</span><wbr><span><span>DESCRIPTION</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1647720464%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-a-u-d-i-o_-d-e-s-c-r-i-p-t-i-o-n.html">AUDIO_DESCRIPTION</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Audio descriptions are available (e.g., via an HTML <code class="lang-kotlin">track</code> element with its <code class="lang-kotlin">kind</code> attribute set to "descriptions").</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1638982726%2FProperties%2F-1013710462" anchor-label="BOOKMARKS" id="1638982726%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-b-o-o-k-m-a-r-k-s.html"><span><span>BOOKMARKS</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1638982726%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-b-o-o-k-m-a-r-k-s.html"><strike>BOOKMARKS</strike></a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">The work includes bookmarks to facilitate navigation to key points.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1082930774%2FProperties%2F-1013710462" anchor-label="BRAILLE" id="1082930774%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-b-r-a-i-l-l-e.html"><span><span>BRAILLE</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1082930774%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-b-r-a-i-l-l-e.html">BRAILLE</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">The content is in braille format, or alternatives are available in braille.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="20639882%2FProperties%2F-1013710462" anchor-label="CAPTIONS" id="20639882%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-c-a-p-t-i-o-n-s.html"><span><span>CAPTIONS</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="20639882%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-c-a-p-t-i-o-n-s.html"><strike>CAPTIONS</strike></a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Indicates that synchronized captions are available for audio and video content.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="73657611%2FProperties%2F-1013710462" anchor-label="CHEMML" id="73657611%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-c-h-e-m-m-l.html"><span><span>CHEMML</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="73657611%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-c-h-e-m-m-l.html">CHEMML</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Identifies that chemical information is encoded using the ChemML markup language.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-415975869%2FProperties%2F-1013710462" anchor-label="CLOSED_CAPTIONS" id="-415975869%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-c-l-o-s-e-d_-c-a-p-t-i-o-n-s.html"><span>CLOSED_</span><wbr><span>CAPTIONS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-415975869%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-c-l-o-s-e-d_-c-a-p-t-i-o-n-s.html">CLOSED_CAPTIONS</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Indicates that synchronized closed captions are available for audio and video content.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1143227703%2FProperties%2F-1013710462" anchor-label="DESCRIBED_MATH" id="-1143227703%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-d-e-s-c-r-i-b-e-d_-m-a-t-h.html"><span>DESCRIBED_</span><wbr><span>MATH</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1143227703%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-d-e-s-c-r-i-b-e-d_-m-a-t-h.html">DESCRIBED_MATH</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Textual descriptions of math equations are included, whether in the alt attribute for image-based equations,</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="525125980%2FProperties%2F-1013710462" anchor-label="DISPLAY_TRANSFORMABILITY" id="525125980%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-d-i-s-p-l-a-y_-t-r-a-n-s-f-o-r-m-a-b-i-l-i-t-y.html"><span>DISPLAY_</span><wbr><span><span>TRANSFORMABILITY</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="525125980%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-d-i-s-p-l-a-y_-t-r-a-n-s-f-o-r-m-a-b-i-l-i-t-y.html">DISPLAY_TRANSFORMABILITY</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Display properties are controllable by the user. This property can be set, for example, if custom CSS style sheets can be applied to the content to control the appearance. It can also be used to indicate that styling in document formats like Word and PDF can be modified.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-21342828%2FProperties%2F-1013710462" anchor-label="FULL_RUBY_ANNOTATIONS" id="-21342828%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-f-u-l-l_-r-u-b-y_-a-n-n-o-t-a-t-i-o-n-s.html"><span>FULL_</span><wbr><span>RUBY_</span><wbr><span><span>ANNOTATIONS</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-21342828%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-f-u-l-l_-r-u-b-y_-a-n-n-o-t-a-t-i-o-n-s.html">FULL_RUBY_ANNOTATIONS</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Indicates that ruby annotations JLreq are attached to every CJK ideographic character in the content. Ruby annotations are used as pronunciation guides for the logographic characters for languages like Chinese or Japanese. They make difficult CJK ideographic characters more accessible.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="177357901%2FProperties%2F-1013710462" anchor-label="HIGH_CONTRAST_AUDIO" id="177357901%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-h-i-g-h_-c-o-n-t-r-a-s-t_-a-u-d-i-o.html"><span>HIGH_</span><wbr><span>CONTRAST_</span><wbr><span>AUDIO</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="177357901%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-h-i-g-h_-c-o-n-t-r-a-s-t_-a-u-d-i-o.html">HIGH_CONTRAST_AUDIO</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Audio content with speech in the foreground meets the contrast thresholds set out in WCAG Success Criteria 1.4.7.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-284091551%2FProperties%2F-1013710462" anchor-label="HIGH_CONTRAST_DISPLAY" id="-284091551%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-h-i-g-h_-c-o-n-t-r-a-s-t_-d-i-s-p-l-a-y.html"><span>HIGH_</span><wbr><span>CONTRAST_</span><wbr><span>DISPLAY</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-284091551%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-h-i-g-h_-c-o-n-t-r-a-s-t_-d-i-s-p-l-a-y.html">HIGH_CONTRAST_DISPLAY</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Content meets the visual contrast threshold set out in WCAG Success Criteria 1.4.6.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-515278282%2FProperties%2F-1013710462" anchor-label="HORIZONTAL_WRITING" id="-515278282%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-h-o-r-i-z-o-n-t-a-l_-w-r-i-t-i-n-g.html"><span>HORIZONTAL_</span><wbr><span>WRITING</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-515278282%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-h-o-r-i-z-o-n-t-a-l_-w-r-i-t-i-n-g.html">HORIZONTAL_WRITING</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Indicates that the content can be laid out horizontally (e.g, using the horizontal-tb writing mode of css-writing-modes-3). This value should only be set when the language of the content allows both horizontal and vertical directions. Notable examples of such languages are Chinese, Japanese, and Korean.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2108129809%2FProperties%2F-1013710462" anchor-label="INDEX" id="2108129809%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-i-n-d-e-x.html"><span><span>INDEX</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2108129809%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-i-n-d-e-x.html">INDEX</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">The work includes an index to the content.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1987342778%2FProperties%2F-1013710462" anchor-label="LARGE_PRINT" id="1987342778%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-l-a-r-g-e_-p-r-i-n-t.html"><span>LARGE_</span><wbr><span>PRINT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1987342778%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-l-a-r-g-e_-p-r-i-n-t.html">LARGE_PRINT</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">The content has been formatted to meet large print guidelines.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1940873297%2FProperties%2F-1013710462" anchor-label="LATEX" id="1940873297%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-l-a-t-e-x.html"><span><span>LATEX</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1940873297%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-l-a-t-e-x.html">LATEX</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Identifies that mathematical equations and formulas are encoded in the LaTeX typesetting system.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2095236116%2FProperties%2F-1013710462" anchor-label="LATEX_CHEMISTRY" id="-2095236116%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-l-a-t-e-x_-c-h-e-m-i-s-t-r-y.html"><span>LATEX_</span><wbr><span>CHEMISTRY</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2095236116%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-l-a-t-e-x_-c-h-e-m-i-s-t-r-y.html">LATEX_CHEMISTRY</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Identifies that the LaTeX typesetting system is used to encode chemical equations and formulas.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1970379966%2FProperties%2F-1013710462" anchor-label="LONG_DESCRIPTION" id="1970379966%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-l-o-n-g_-d-e-s-c-r-i-p-t-i-o-n.html"><span>LONG_</span><wbr><span><span>DESCRIPTION</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1970379966%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-l-o-n-g_-d-e-s-c-r-i-p-t-i-o-n.html">LONG_DESCRIPTION</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Descriptions are provided for image-based visual content and/or complex structures such as tables, mathematics, diagrams, and charts.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2007216912%2FProperties%2F-1013710462" anchor-label="MATHML" id="-2007216912%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-m-a-t-h-m-l.html"><span><span>MATHML</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2007216912%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-m-a-t-h-m-l.html">MATHML</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Identifies that mathematical equations and formulas are encoded in MathML.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-6410805%2FProperties%2F-1013710462" anchor-label="MATHML_CHEMISTRY" id="-6410805%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-m-a-t-h-m-l_-c-h-e-m-i-s-t-r-y.html"><span>MATHML_</span><wbr><span>CHEMISTRY</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-6410805%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-m-a-t-h-m-l_-c-h-e-m-i-s-t-r-y.html">MATHML_CHEMISTRY</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Identifies that MathML is used to encode chemical equations and formulas.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1676060673%2FProperties%2F-1013710462" anchor-label="NONE" id="-1676060673%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-n-o-n-e.html"><span><span>NONE</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1676060673%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-n-o-n-e.html">NONE</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Indicates that the resource does not contain any accessibility features.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-672571103%2FProperties%2F-1013710462" anchor-label="OPEN_CAPTIONS" id="-672571103%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-o-p-e-n_-c-a-p-t-i-o-n-s.html"><span>OPEN_</span><wbr><span>CAPTIONS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-672571103%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-o-p-e-n_-c-a-p-t-i-o-n-s.html">OPEN_CAPTIONS</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Indicates that synchronized open captions are available for audio and video content.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1892956018%2FProperties%2F-1013710462" anchor-label="PAGE_BREAK_MARKERS" id="-1892956018%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-p-a-g-e_-b-r-e-a-k_-m-a-r-k-e-r-s.html"><span>PAGE_</span><wbr><span>BREAK_</span><wbr><span>MARKERS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1892956018%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-p-a-g-e_-b-r-e-a-k_-m-a-r-k-e-r-s.html">PAGE_BREAK_MARKERS</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">The resource includes static page markers, such as those identified by the doc-pagebreak role (DPUB-ARIA-1.0).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1563908543%2FProperties%2F-1013710462" anchor-label="PAGE_NAVIGATION" id="1563908543%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-p-a-g-e_-n-a-v-i-g-a-t-i-o-n.html"><span>PAGE_</span><wbr><span>NAVIGATION</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1563908543%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-p-a-g-e_-n-a-v-i-g-a-t-i-o-n.html">PAGE_NAVIGATION</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">The resource includes a means of navigating to static page break locations.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1321081675%2FProperties%2F-1013710462" anchor-label="PRINT_PAGE_NUMBERS" id="1321081675%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-p-r-i-n-t_-p-a-g-e_-n-u-m-b-e-r-s.html"><span>PRINT_</span><wbr><span>PAGE_</span><wbr><span>NUMBERS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1321081675%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-p-r-i-n-t_-p-a-g-e_-n-u-m-b-e-r-s.html">PRINT_PAGE_NUMBERS</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">The work includes equivalent print page numbers. This setting is most commonly used with ebooks for which there is a print equivalent.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-230184632%2FProperties%2F-1013710462" anchor-label="READING_ORDER" id="-230184632%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-r-e-a-d-i-n-g_-o-r-d-e-r.html"><span>READING_</span><wbr><span>ORDER</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-230184632%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-r-e-a-d-i-n-g_-o-r-d-e-r.html">READING_ORDER</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">The reading order of the content is clearly defined in the markup (e.g., figures, sidebars and other secondary content has been marked up to allow it to be skipped automatically and/or manually escaped from).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1195021816%2FProperties%2F-1013710462" anchor-label="RUBY_ANNOTATIONS" id="1195021816%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-r-u-b-y_-a-n-n-o-t-a-t-i-o-n-s.html"><span>RUBY_</span><wbr><span><span>ANNOTATIONS</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1195021816%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-r-u-b-y_-a-n-n-o-t-a-t-i-o-n-s.html">RUBY_ANNOTATIONS</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Indicates that <code class="lang-kotlin">ruby</code> annotations HTML are provided in the content. Ruby annotations are used as pronunciation guides for the logographic characters for languages like Chinese or Japanese. It makes difficult Kanji or CJK ideographic characters more accessible.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="256974377%2FProperties%2F-1013710462" anchor-label="SIGN_LANGUAGE" id="256974377%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-i-g-n_-l-a-n-g-u-a-g-e.html"><span>SIGN_</span><wbr><span>LANGUAGE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="256974377%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-s-i-g-n_-l-a-n-g-u-a-g-e.html">SIGN_LANGUAGE</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Sign language interpretation is available for audio and video content.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1830039411%2FProperties%2F-1013710462" anchor-label="STRUCTURAL_NAVIGATION" id="-1830039411%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-t-r-u-c-t-u-r-a-l_-n-a-v-i-g-a-t-i-o-n.html"><span>STRUCTURAL_</span><wbr><span>NAVIGATION</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1830039411%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-s-t-r-u-c-t-u-r-a-l_-n-a-v-i-g-a-t-i-o-n.html">STRUCTURAL_NAVIGATION</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">The use of headings in the work fully and accurately reflects the document hierarchy, allowing navigation by assistive technologies.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-69742590%2FProperties%2F-1013710462" anchor-label="SYNCHRONIZED_AUDIO_TEXT" id="-69742590%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-y-n-c-h-r-o-n-i-z-e-d_-a-u-d-i-o_-t-e-x-t.html"><span>SYNCHRONIZED_</span><wbr><span>AUDIO_</span><wbr><span>TEXT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-69742590%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-s-y-n-c-h-r-o-n-i-z-e-d_-a-u-d-i-o_-t-e-x-t.html">SYNCHRONIZED_AUDIO_TEXT</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Describes a resource that offers both audio and text, with information that allows them to be rendered simultaneously. The granularity of the synchronization is not specified. This term is not recommended when the only material that is synchronized is the document headings.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1471716658%2FProperties%2F-1013710462" anchor-label="TABLE_OF_CONTENTS" id="1471716658%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-a-b-l-e_-o-f_-c-o-n-t-e-n-t-s.html"><span>TABLE_</span><wbr><span>OF_</span><wbr><span>CONTENTS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1471716658%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-t-a-b-l-e_-o-f_-c-o-n-t-e-n-t-s.html">TABLE_OF_CONTENTS</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">The work includes a table of contents that provides links to the major sections of the content.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-998183178%2FProperties%2F-1013710462" anchor-label="TACTILE_GRAPHIC" id="-998183178%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-a-c-t-i-l-e_-g-r-a-p-h-i-c.html"><span>TACTILE_</span><wbr><span>GRAPHIC</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-998183178%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-t-a-c-t-i-l-e_-g-r-a-p-h-i-c.html">TACTILE_GRAPHIC</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">When used with creative works such as books, indicates that the resource includes tactile graphics. When used to describe an image resource or physical object, indicates that the resource is a tactile graphic.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="236446781%2FProperties%2F-1013710462" anchor-label="TACTILE_OBJECT" id="236446781%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-a-c-t-i-l-e_-o-b-j-e-c-t.html"><span>TACTILE_</span><wbr><span>OBJECT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="236446781%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-t-a-c-t-i-l-e_-o-b-j-e-c-t.html">TACTILE_OBJECT</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">When used with creative works such as books, indicates that the resource includes models to generate tactile 3D objects. When used to describe a physical object, indicates that the resource is a tactile 3D object.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2126026264%2FProperties%2F-1013710462" anchor-label="TAGGED_PDF" id="2126026264%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-a-g-g-e-d_-p-d-f.html"><span>TAGGED_</span><wbr><span>PDF</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2126026264%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-t-a-g-g-e-d_-p-d-f.html">TAGGED_PDF</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">The contents of the PDF have been tagged to permit access by assistive technologies.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="312028783%2FProperties%2F-1013710462" anchor-label="TIMING_CONTROL" id="312028783%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-i-m-i-n-g_-c-o-n-t-r-o-l.html"><span>TIMING_</span><wbr><span>CONTROL</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="312028783%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-t-i-m-i-n-g_-c-o-n-t-r-o-l.html">TIMING_CONTROL</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">For content with timed interaction, this value indicates that the user can control the timing to meet their needs (e.g., pause and reset)</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1827683903%2FProperties%2F-1013710462" anchor-label="TRANSCRIPT" id="-1827683903%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-r-a-n-s-c-r-i-p-t.html"><span><span>TRANSCRIPT</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1827683903%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-t-r-a-n-s-c-r-i-p-t.html">TRANSCRIPT</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Indicates that a transcript of the audio content is available.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1806880035%2FProperties%2F-1013710462" anchor-label="TTS_MARKUP" id="1806880035%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-t-s_-m-a-r-k-u-p.html"><span>TTS_</span><wbr><span>MARKUP</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1806880035%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-t-t-s_-m-a-r-k-u-p.html">TTS_MARKUP</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">One or more of SSML, Pronunciation-Lexicon, and CSS3-Speech properties has been used to enhance text-to-speech playback quality.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1826751052%2FProperties%2F-1013710462" anchor-label="UNLOCKED" id="-1826751052%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-u-n-l-o-c-k-e-d.html"><span><span>UNLOCKED</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1826751052%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-u-n-l-o-c-k-e-d.html">UNLOCKED</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">No digital rights management or other content restriction protocols have been applied to the resource.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="328123300%2FProperties%2F-1013710462" anchor-label="VERTICAL_WRITING" id="328123300%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-v-e-r-t-i-c-a-l_-w-r-i-t-i-n-g.html"><span>VERTICAL_</span><wbr><span>WRITING</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="328123300%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-v-e-r-t-i-c-a-l_-w-r-i-t-i-n-g.html">VERTICAL_WRITING</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Indicates that the content can be laid out vertically (e.g, using the vertical-rl of css-writing-modes-3). This value should only be set when the language of the content allows both horizontal and vertical directions.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-513265909%2FProperties%2F-1013710462" anchor-label="WITH_ADDITIONAL_WORD_SEGMENTATION" id="-513265909%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-w-i-t-h_-a-d-d-i-t-i-o-n-a-l_-w-o-r-d_-s-e-g-m-e-n-t-a-t-i-o-n.html"><span>WITH_</span><wbr><span>ADDITIONAL_</span><wbr><span>WORD_</span><wbr><span><span>SEGMENTATION</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-513265909%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-w-i-t-h_-a-d-d-i-t-i-o-n-a-l_-w-o-r-d_-s-e-g-m-e-n-t-a-t-i-o-n.html">WITH_ADDITIONAL_WORD_SEGMENTATION</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Indicates that the content can be rendered with additional word segmentation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="960691233%2FProperties%2F-1013710462" anchor-label="WITHOUT_ADDITIONAL_WORD_SEGMENTATION" id="960691233%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-w-i-t-h-o-u-t_-a-d-d-i-t-i-o-n-a-l_-w-o-r-d_-s-e-g-m-e-n-t-a-t-i-o-n.html"><span>WITHOUT_</span><wbr><span>ADDITIONAL_</span><wbr><span>WORD_</span><wbr><span><span>SEGMENTATION</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="960691233%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-w-i-t-h-o-u-t_-a-d-d-i-t-i-o-n-a-l_-w-o-r-d_-s-e-g-m-e-n-t-a-t-i-o-n.html">WITHOUT_ADDITIONAL_WORD_SEGMENTATION</a><span class="token operator">: </span><a href="../index.html">Accessibility.Feature</a></div><div class="brief "><p class="paragraph">Indicates that the content can be rendered without additional word segmentation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="-1056610116%2FFunctions%2F-1013710462" anchor-label="fromJSONArray" id="-1056610116%2FFunctions%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="from-j-s-o-n-array.html"><span>from</span><wbr><span><span>JSONArray</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1056610116%2FFunctions%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="from-j-s-o-n-array.html"><span class="token function">fromJSONArray</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">json<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/org/json/JSONArray.html">JSONArray</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../index.html">Accessibility.Feature</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Creates a list of <a href="../index.html">Feature</a> from its RWPM JSON representation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="373365055%2FFunctions%2F-1013710462" anchor-label="toJSONArray" id="373365055%2FFunctions%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-j-s-o-n-array.html"><span>to</span><wbr><span><span>JSONArray</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="373365055%2FFunctions%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="../index.html">Accessibility.Feature</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="to-j-s-o-n-array.html"><span class="token function">toJSONArray</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/org/json/JSONArray.html">JSONArray</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

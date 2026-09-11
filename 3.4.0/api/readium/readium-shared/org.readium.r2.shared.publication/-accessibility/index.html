@@ -1,0 +1,438 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>Accessibility</title>
+<link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../../index.html" tabindex="1">
+                    Readium
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":readium:readium-shared/release">release</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":readium:readium-shared/release" data-filter=":readium:readium-shared/release">
+                                <span class="checkbox--icon"></span>
+                                release
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Readium
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="readium-shared::org.readium.r2.shared.publication/Accessibility///PointingToDeclaration//-1013710462">
+  <div class="breadcrumbs"><a href="../../index.html">readium-shared</a><span class="delimiter">/</span><a href="../index.html">org.readium.r2.shared.publication</a><span class="delimiter">/</span><span class="current">Accessibility</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Accessibility</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">Accessibility</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>conformsTo<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="-profile/index.html">Accessibility.Profile</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptySet()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>certification<span class="token operator">: </span><a href="-certification/index.html">Accessibility.Certification</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>summary<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>accessModes<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="-access-mode/index.html">Accessibility.AccessMode</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptySet()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>accessModesSufficient<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="-primary-access-mode/index.html">Accessibility.PrimaryAccessMode</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token operator"> = </span>emptySet()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>features<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="-feature/index.html">Accessibility.Feature</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptySet()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>hazards<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="-hazard/index.html">Accessibility.Hazard</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptySet()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>exemptions<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="-exemption/index.html">Accessibility.Exemption</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptySet()</span></span><span class="token punctuation">)</span> : <a href="../../org.readium.r2.shared/-j-s-o-nable/index.html">JSONable</a>, <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div><p class="paragraph">Holds the accessibility metadata of a Publication.</p><p class="paragraph">https://www.w3.org/2021/a11y-discov-vocab/latest/ https://readium.org/webpub-manifest/schema/a11y.schema.json</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="tableheader">Constructors</h2>
+        <div class="table"><a data-name="1910467186%2FConstructors%2F-1013710462" anchor-label="Accessibility" id="1910467186%2FConstructors%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-accessibility.html"><span><span>Accessibility</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1910467186%2FConstructors%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">conformsTo<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="-profile/index.html">Accessibility.Profile</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptySet()<span class="token punctuation">, </span></span><span class="parameter ">certification<span class="token operator">: </span><a href="-certification/index.html">Accessibility.Certification</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">summary<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">accessModes<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="-access-mode/index.html">Accessibility.AccessMode</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptySet()<span class="token punctuation">, </span></span><span class="parameter ">accessModesSufficient<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="-primary-access-mode/index.html">Accessibility.PrimaryAccessMode</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token operator"> = </span>emptySet()<span class="token punctuation">, </span></span><span class="parameter ">features<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="-feature/index.html">Accessibility.Feature</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptySet()<span class="token punctuation">, </span></span><span class="parameter ">hazards<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="-hazard/index.html">Accessibility.Hazard</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptySet()<span class="token punctuation">, </span></span><span class="parameter ">exemptions<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="-exemption/index.html">Accessibility.Exemption</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptySet()</span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="-2064695873%2FClasslikes%2F-1013710462" anchor-label="AccessMode" id="-2064695873%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-access-mode/index.html"><span>Access</span><wbr><span><span>Mode</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2064695873%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-access-mode/index.html">AccessMode</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>value<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div><div class="brief "><p class="paragraph">A human sensory perceptual system or cognitive faculty through which a person may process or perceive information.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-232993854%2FClasslikes%2F-1013710462" anchor-label="Certification" id="-232993854%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-certification/index.html"><span><span>Certification</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-232993854%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-certification/index.html">Certification</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>certifiedBy<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>credential<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>report<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span> : <a href="../../org.readium.r2.shared/-j-s-o-nable/index.html">JSONable</a>, <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div><div class="brief "><p class="paragraph">Certification of accessible publications.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-505750736%2FClasslikes%2F-1013710462" anchor-label="Companion" id="-505750736%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-505750736%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1248923923%2FClasslikes%2F-1013710462" anchor-label="Exemption" id="1248923923%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-exemption/index.html"><span><span>Exemption</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1248923923%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-exemption/index.html">Exemption</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>value<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div><div class="brief "><p class="paragraph"><a href="-exemption/index.html">Exemption</a> allows content creators to identify publications that do not meet conformance requirements but fall under exemptions in a given juridiction.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1797080390%2FClasslikes%2F-1013710462" anchor-label="Feature" id="1797080390%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-feature/index.html"><span><span>Feature</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1797080390%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-feature/index.html">Feature</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>value<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div><div class="brief "><p class="paragraph">A content feature of the described resource, such as accessible media, alternatives and supported enhancements for accessibility.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1756940364%2FClasslikes%2F-1013710462" anchor-label="Hazard" id="-1756940364%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-hazard/index.html"><span><span>Hazard</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1756940364%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-hazard/index.html">Hazard</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>value<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div><div class="brief "><p class="paragraph">A characteristic of the described resource that is physiologically dangerous to some users.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1095098093%2FClasslikes%2F-1013710462" anchor-label="PrimaryAccessMode" id="-1095098093%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-primary-access-mode/index.html"><span>Primary</span><wbr><span>Access</span><wbr><span><span>Mode</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1095098093%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">enum </span><a href="-primary-access-mode/index.html">PrimaryAccessMode</a> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a>, <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="-primary-access-mode/index.html">Accessibility.PrimaryAccessMode</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">A human primary sensory perceptual system or cognitive faculty through which a person may process or perceive information.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-231598605%2FClasslikes%2F-1013710462" anchor-label="Profile" id="-231598605%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-profile/index.html"><span><span>Profile</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-231598605%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-profile/index.html">Profile</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>uri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div><div class="brief "><p class="paragraph">Accessibility profile.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="-543235011%2FProperties%2F-1013710462" anchor-label="accessModes" id="-543235011%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="access-modes.html"><span>access</span><wbr><span><span>Modes</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-543235011%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="access-modes.html">accessModes</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="-access-mode/index.html">Accessibility.AccessMode</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">The human sensory perceptual system or cognitive faculty through which a person may process or perceive information.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="581790911%2FProperties%2F-1013710462" anchor-label="accessModesSufficient" id="581790911%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="access-modes-sufficient.html"><span>access</span><wbr><span>Modes</span><wbr><span><span>Sufficient</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="581790911%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="access-modes-sufficient.html">accessModesSufficient</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="-primary-access-mode/index.html">Accessibility.PrimaryAccessMode</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">A list of single or combined accessModes that are sufficient to understand all the intellectual content of a resource.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="358524015%2FProperties%2F-1013710462" anchor-label="certification" id="358524015%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="certification.html"><span><span>certification</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="358524015%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="certification.html">certification</a><span class="token operator">: </span><a href="-certification/index.html">Accessibility.Certification</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Certification of accessible publications.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1238051639%2FProperties%2F-1013710462" anchor-label="conformsTo" id="-1238051639%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="conforms-to.html"><span>conforms</span><wbr><span><span>To</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1238051639%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="conforms-to.html">conformsTo</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="-profile/index.html">Accessibility.Profile</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">An established standard to which the described resource conforms.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2116013191%2FProperties%2F-1013710462" anchor-label="exemptions" id="2116013191%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="exemptions.html"><span><span>exemptions</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2116013191%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="exemptions.html">exemptions</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="-exemption/index.html">Accessibility.Exemption</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Justifications for non-conformance based on exemptions in a given jurisdiction.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="465187444%2FProperties%2F-1013710462" anchor-label="features" id="465187444%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="features.html"><span><span>features</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="465187444%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="features.html">features</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="-feature/index.html">Accessibility.Feature</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Content features of the resource, such as accessible media, alternatives and supported enhancements for accessibility.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="9896296%2FProperties%2F-1013710462" anchor-label="hazards" id="9896296%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="hazards.html"><span><span>hazards</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="9896296%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="hazards.html">hazards</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="-hazard/index.html">Accessibility.Hazard</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">A characteristic of the described resource that is physiologically dangerous to some users.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1820802045%2FProperties%2F-1013710462" anchor-label="summary" id="-1820802045%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="summary.html"><span><span>summary</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1820802045%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="summary.html">summary</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">A human-readable summary of specific accessibility features or deficiencies, consistent with the other accessibility metadata but expressing subtleties such as "short descriptions are present but long descriptions will be needed for non-visual users" or "short descriptions are present and no long descriptions are needed."</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="-1578325224%2FFunctions%2F-1013710462" anchor-label="describeContents" id="-1578325224%2FFunctions%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../org.readium.r2.shared.util.mediatype/-media-type/index.html#-1578325224%2FFunctions%2F-1013710462"><span>describe</span><wbr><span><span>Contents</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1578325224%2FFunctions%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="../../org.readium.r2.shared.util.mediatype/-media-type/index.html#-1578325224%2FFunctions%2F-1013710462"><span class="token function">describeContents</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="128771214%2FFunctions%2F-1013710462" anchor-label="toJSON" id="128771214%2FFunctions%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-j-s-o-n.html"><span>to</span><wbr><span><span>JSON</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="128771214%2FFunctions%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="to-j-s-o-n.html"><span class="token function">toJSON</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a></div><div class="brief "><p class="paragraph">Serializes the object to its JSON representation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1754457655%2FFunctions%2F-1013710462" anchor-label="writeToParcel" id="-1754457655%2FFunctions%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../org.readium.r2.shared.util.mediatype/-media-type/index.html#-1754457655%2FFunctions%2F-1013710462"><span>write</span><wbr><span>To</span><wbr><span><span>Parcel</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1754457655%2FFunctions%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="../../org.readium.r2.shared.util.mediatype/-media-type/index.html#-1754457655%2FFunctions%2F-1013710462"><span class="token function">writeToParcel</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/os/Parcel.html">Parcel</a><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

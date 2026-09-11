@@ -1,0 +1,1899 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Readium Mobile is a toolkit for ebooks, audiobooks and comics written in Swift & Kotlin.">
+      
+      
+        <meta name="author" content="Readium Foundation">
+      
+      
+        <link rel="canonical" href="https://github.com/readium/kotlin-toolkit/3.4.0/guides/navigator/navigator/">
+      
+      
+        <link rel="prev" href="../../open-publication/">
+      
+      
+        <link rel="next" href="../web-navigators/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Navigator - Readium Kotlin</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../readium_colors.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#navigator" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Readium Kotlin" class="md-header__button md-logo" aria-label="Readium Kotlin" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Readium Kotlin
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Navigator
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/readium/kotlin-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kotlin-toolkit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../migration-guide/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Migration Guide
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../api/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../getting-started/" class="md-tabs__link">
+          
+  
+  
+  User Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Readium Kotlin" class="md-nav__button md-logo" aria-label="Readium Kotlin" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Readium Kotlin
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/readium/kotlin-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kotlin-toolkit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../migration-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migration Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../content/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extracting the content of a publication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../open-publication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Opening a publication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Navigator
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Navigator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#default-implementations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Default implementations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Default implementations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#navigator-apis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Navigator APIs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Navigator APIs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#navigator-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Navigator interface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visualnavigator-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VisualNavigator interface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overflowablenavigator-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OverflowableNavigator interface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#medianavigator-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MediaNavigator interface
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MediaNavigator interface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#timebasedmedianavigator-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TimeBasedMediaNavigator interface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#textawaremedianavigator-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TextAwareMediaNavigator interface
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#selectablenavigator-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SelectableNavigator interface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decorablenavigator-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DecorableNavigator interface
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#instantiating-a-navigator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Instantiating a navigator
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Instantiating a navigator">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#visual-navigators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visual navigators
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Visual navigators">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#epubnavigatorfragment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EpubNavigatorFragment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pdfnavigatorfragment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PdfNavigatorFragment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#imagenavigatorfragment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ImageNavigatorFragment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limitations-of-the-current-fragment-apis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limitations of the current Fragment APIs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#audionavigator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AudioNavigator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ttsnavigator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TtsNavigator
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#navigating-the-contents-of-the-publication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Navigating the contents of the publication
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reading-progression" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading progression
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Reading progression">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#saving-and-restoring-the-reading-progression" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Saving and restoring the reading progression
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bookmarking-the-current-location" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bookmarking the current location
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#displaying-a-progression-slider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Displaying a progression slider
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#displaying-the-number-of-positions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Displaying the number of positions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#navigating-with-edge-taps-and-keyboard-arrows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Navigating with edge taps and keyboard arrows
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#user-preferences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        User preferences
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../web-navigators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web navigators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../media-navigator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Media navigator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preferences/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Navigator preferences
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../epub-fonts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EPUB font families
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pdf/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PDF support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Text-to-speech
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../accessibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Accessibility
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guide/lcp.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LCP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#default-implementations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Default implementations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Default implementations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#navigator-apis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Navigator APIs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Navigator APIs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#navigator-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Navigator interface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visualnavigator-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VisualNavigator interface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overflowablenavigator-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OverflowableNavigator interface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#medianavigator-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MediaNavigator interface
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MediaNavigator interface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#timebasedmedianavigator-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TimeBasedMediaNavigator interface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#textawaremedianavigator-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TextAwareMediaNavigator interface
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#selectablenavigator-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SelectableNavigator interface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decorablenavigator-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DecorableNavigator interface
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#instantiating-a-navigator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Instantiating a navigator
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Instantiating a navigator">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#visual-navigators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visual navigators
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Visual navigators">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#epubnavigatorfragment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EpubNavigatorFragment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pdfnavigatorfragment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PdfNavigatorFragment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#imagenavigatorfragment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ImageNavigatorFragment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limitations-of-the-current-fragment-apis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limitations of the current Fragment APIs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#audionavigator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AudioNavigator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ttsnavigator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TtsNavigator
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#navigating-the-contents-of-the-publication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Navigating the contents of the publication
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reading-progression" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading progression
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Reading progression">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#saving-and-restoring-the-reading-progression" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Saving and restoring the reading progression
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bookmarking-the-current-location" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bookmarking the current location
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#displaying-a-progression-slider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Displaying a progression slider
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#displaying-the-number-of-positions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Displaying the number of positions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#navigating-with-edge-taps-and-keyboard-arrows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Navigating with edge taps and keyboard arrows
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#user-preferences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        User preferences
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation" >
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../../.." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Home
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../../getting-started/" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    User Guides
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="navigator">Navigator<a class="headerlink" href="#navigator" title="Permanent link">&para;</a></h1>
+<p>You can use a Readium Navigator to present the publication to the user. The <code>Navigator</code> renders resources on the screen and offers APIs and user interactions for navigating the contents.</p>
+<p>:warning: Navigators do not have user interfaces besides the view that displays the publication. Applications are responsible for providing a user interface with bookmark buttons, a progress bar, etc.</p>
+<h2 id="default-implementations">Default implementations<a class="headerlink" href="#default-implementations" title="Permanent link">&para;</a></h2>
+<p>The Readium toolkit comes with several <code>Navigator</code> implementations for different publication profiles. Some are Android <code>Fragment</code>s, designed to be added to your view hierarchy, while others are chromeless and can be used in the background.</p>
+<table>
+<thead>
+<tr>
+<th>Navigator</th>
+<th>Supported publications</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>EpubNavigatorFragment</code></td>
+<td><code>epub</code> profile (EPUB, Readium Web Publication)</td>
+</tr>
+<tr>
+<td><code>PdfNavigatorFragment</code></td>
+<td><code>pdf</code> profile (PDF, LCP for PDF package)</td>
+</tr>
+<tr>
+<td><code>ImageNavigatorFragment</code></td>
+<td><code>divina</code> profile (Zipped Comic Book, Readium Divina)</td>
+</tr>
+<tr>
+<td><code>AudioNavigator</code></td>
+<td><code>audiobook</code> profile (Zipped Audio Book, Readium Audiobook, LCP for Audiobooks package)</td>
+</tr>
+<tr>
+<td><code>TtsNavigator</code></td>
+<td>Any publication with a <a href="../../content/"><code>ContentService</code></a></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>[!NOTE]
+New alpha Jetpack Compose-based Navigators are also available for EPUB: <code>ReflowableWebRendition</code> and <code>FixedWebRendition</code>. <a href="../web-navigators/">Refer to the Web Navigators guide for more details</a>.</p>
+</blockquote>
+<p>To find out which Navigator is compatible with a publication, refer to its <a href="https://readium.org/webpub-manifest/profiles/">profile</a>. Use <code>publication.conformsTo()</code> to identify the publication's profile.</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">publication</span><span class="p">.</span><span class="na">conformsTo</span><span class="p">(</span><span class="n">Publication</span><span class="p">.</span><span class="na">Profile</span><span class="p">.</span><span class="na">EPUB</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Initialize an `EpubNavigatorFragment`.</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="navigator-apis">Navigator APIs<a class="headerlink" href="#navigator-apis" title="Permanent link">&para;</a></h3>
+<p>Navigators implement a set of shared interfaces to help reuse the reading logic across publication profiles. For example, instead of using specific implementations like <code>EpubNavigatorFragment</code>, use the <code>Navigator</code> interface to create a location history manager compatible with all Navigator types.</p>
+<p>You can create custom Navigators and easily integrate them into your app with minimal modifications by implementing these interfaces.</p>
+<h4 id="navigator-interface"><code>Navigator</code> interface<a class="headerlink" href="#navigator-interface" title="Permanent link">&para;</a></h4>
+<p>All Navigators implement the <code>Navigator</code> interface, which provides the foundation for navigating resources in a <code>Publication</code>. You can use it to move through the publication's content or to find the current position.</p>
+<p>Note that this interface does not specify how the content is presented to the user.</p>
+<h4 id="visualnavigator-interface"><code>VisualNavigator</code> interface<a class="headerlink" href="#visualnavigator-interface" title="Permanent link">&para;</a></h4>
+<p>Navigators rendering the content visually on the screen implement the <code>VisualNavigator</code> interface. This interface allows monitoring input events such as taps or keyboard strokes.</p>
+<h4 id="overflowablenavigator-interface"><code>OverflowableNavigator</code> interface<a class="headerlink" href="#overflowablenavigator-interface" title="Permanent link">&para;</a></h4>
+<p>An <code>OverflowableNavigator</code> is a Visual Navigator whose content can extend beyond the viewport. This interface offers details about the overflow style, e.g., scrolled, scroll axis or the reading progression.</p>
+<p>The user typically navigates through the publication by scrolling or tapping the viewport edges.</p>
+<h4 id="medianavigator-interface"><code>MediaNavigator</code> interface<a class="headerlink" href="#medianavigator-interface" title="Permanent link">&para;</a></h4>
+<p>The <code>MediaNavigator</code> interface is implemented by Navigators rendering a publication as audio or video content. You can use it to control the playback or observe its status.</p>
+<p><a href="../media-navigator/">Refer to the <code>MediaNavigator</code> guide for additional details</a>.</p>
+<h5 id="timebasedmedianavigator-interface"><code>TimeBasedMediaNavigator</code> interface<a class="headerlink" href="#timebasedmedianavigator-interface" title="Permanent link">&para;</a></h5>
+<p>A time-based <code>MediaNavigator</code> renders an audio or video content with time locations. It is suitable for audiobook or media overlays Navigators.</p>
+<h5 id="textawaremedianavigator-interface"><code>TextAwareMediaNavigator</code> interface<a class="headerlink" href="#textawaremedianavigator-interface" title="Permanent link">&para;</a></h5>
+<p>A text-aware <code>MediaNavigator</code> synchronizes utterances (e.g. sentences) with their corresponding audio or video clips. It can be used for text-to-speech, media overlays, and subtitled Navigators.</p>
+<h4 id="selectablenavigator-interface"><code>SelectableNavigator</code> interface<a class="headerlink" href="#selectablenavigator-interface" title="Permanent link">&para;</a></h4>
+<p>Navigators enabling users to select parts of the content implement <code>SelectableNavigator</code>. You can use it to extract the <code>Locator</code> and content of the selected portion.</p>
+<h4 id="decorablenavigator-interface"><code>DecorableNavigator</code> interface<a class="headerlink" href="#decorablenavigator-interface" title="Permanent link">&para;</a></h4>
+<p>A Decorable Navigator is able to render decorations over a publication, such as highlights or margin icons.</p>
+<p><a href="https://readium.org/architecture/proposals/008-decorator-api.html">See the corresponding proposal for more information</a>.</p>
+<h2 id="instantiating-a-navigator">Instantiating a navigator<a class="headerlink" href="#instantiating-a-navigator" title="Permanent link">&para;</a></h2>
+<h3 id="visual-navigators">Visual navigators<a class="headerlink" href="#visual-navigators" title="Permanent link">&para;</a></h3>
+<p>The Visual Navigators are implemented as <code>Fragment</code> and must be added to your Android view hierarchy to render the publication contents. </p>
+<h4 id="epubnavigatorfragment"><code>EpubNavigatorFragment</code><a class="headerlink" href="#epubnavigatorfragment" title="Permanent link">&para;</a></h4>
+<p>Create an <code>EpubNavigatorFactory</code> using your <code>Publication</code> instance. Optionally, set custom defaults for user preferences.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">navigatorFactory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">EpubNavigatorFactory</span><span class="p">(</span>
+<span class="w">    </span><span class="n">publication</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">publication</span><span class="p">,</span>
+<span class="w">    </span><span class="n">configuration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">EpubNavigatorFactory</span><span class="p">.</span><span class="na">Configuration</span><span class="p">(</span>
+<span class="w">        </span><span class="n">defaults</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">EpubDefaults</span><span class="p">(</span>
+<span class="w">            </span><span class="n">pageMargins</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.4</span>
+<span class="w">        </span><span class="p">)</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Then, you need to setup the <code>FragmentFactory</code> in your custom parent <code>Fragment</code>. Refer to <code>EpubReaderFragment</code> in the Test App for a complete example.</p>
+<p>:point_up: This is one method to set up the <code>EpubNavigatorFragment</code> in your view hierarchy. Select the approach that suits your application best.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">class</span><span class="w"> </span><span class="nc">EpubReaderFragment</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Fragment</span><span class="p">(),</span><span class="w"> </span><span class="n">EpubNavigatorFragment</span><span class="p">.</span><span class="na">Listener</span><span class="w"> </span><span class="p">{</span>
+
+<span class="w">    </span><span class="kd">lateinit</span><span class="w"> </span><span class="kd">var</span><span class="w"> </span><span class="nv">navigator</span><span class="p">:</span><span class="w"> </span><span class="n">EpubNavigatorFragment</span>
+<span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">var</span><span class="w"> </span><span class="nv">binding</span><span class="p">:</span><span class="w"> </span><span class="n">FragmentReaderBinding</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">viewLifecycle</span><span class="p">()</span>
+
+<span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">onCreate</span><span class="p">(</span><span class="n">savedInstanceState</span><span class="p">:</span><span class="w"> </span><span class="n">Bundle?</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// You are responsible for creating/restoring the `NavigatorFactory`,</span>
+<span class="w">        </span><span class="c1">// for example from an in-memory repository.</span>
+<span class="w">        </span><span class="c1">// See `ReaderRepository` in the Test App for an example.</span>
+<span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">navigatorFactory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">...</span>
+
+<span class="w">        </span><span class="c1">// You should restore the initial location from your view model.</span>
+<span class="w">        </span><span class="n">childFragmentManager</span><span class="p">.</span><span class="na">fragmentFactory</span><span class="w"> </span><span class="o">=</span>
+<span class="w">            </span><span class="n">navigatorFactory</span><span class="p">.</span><span class="na">createFragmentFactory</span><span class="p">(</span>
+<span class="w">                </span><span class="n">initialLocator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">viewModel</span><span class="p">.</span><span class="na">initialLocator</span><span class="p">,</span>
+<span class="w">                </span><span class="n">listener</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span>
+<span class="w">            </span><span class="p">)</span>
+
+<span class="w">        </span><span class="c1">// IMPORTANT: Set the `fragmentFactory` before calling `super`.</span>
+<span class="w">        </span><span class="k">super</span><span class="p">.</span><span class="na">onCreate</span><span class="p">(</span><span class="n">savedInstanceState</span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">onCreateView</span><span class="p">(</span>
+<span class="w">        </span><span class="n">inflater</span><span class="p">:</span><span class="w"> </span><span class="n">LayoutInflater</span><span class="p">,</span>
+<span class="w">        </span><span class="n">container</span><span class="p">:</span><span class="w"> </span><span class="n">ViewGroup?</span><span class="p">,</span>
+<span class="w">        </span><span class="n">savedInstanceState</span><span class="p">:</span><span class="w"> </span><span class="n">Bundle?</span>
+<span class="w">    </span><span class="p">):</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">binding</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FragmentReaderBinding</span><span class="p">.</span><span class="na">inflate</span><span class="p">(</span><span class="n">inflater</span><span class="p">,</span><span class="w"> </span><span class="n">container</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
+<span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">view</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">binding</span><span class="p">.</span><span class="na">root</span>
+<span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">tag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"EpubNavigatorFragment"</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">savedInstanceState</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">childFragmentManager</span><span class="p">.</span><span class="na">commitNow</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">add</span><span class="p">(</span><span class="n">R</span><span class="p">.</span><span class="na">id</span><span class="p">.</span><span class="na">navigator_container</span><span class="p">,</span><span class="w"> </span><span class="n">EpubNavigatorFragment</span><span class="o">::</span><span class="n">class</span><span class="p">.</span><span class="na">java</span><span class="p">,</span><span class="w"> </span><span class="n">Bundle</span><span class="p">(),</span><span class="w"> </span><span class="n">tag</span><span class="p">)</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">navigator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">childFragmentManager</span><span class="p">.</span><span class="na">findFragmentByTag</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">EpubNavigatorFragment</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">view</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;FrameLayout</span>
+<span class="w">    </span><span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+<span class="w">    </span><span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+<span class="w">    </span><span class="na">android:layout_height=</span><span class="s">"match_parent"</span>
+<span class="w">    </span><span class="nt">&gt;</span>
+
+<span class="w">    </span><span class="nt">&lt;androidx.fragment.app.FragmentContainerView</span>
+<span class="w">        </span><span class="na">android:id=</span><span class="s">"@+id/navigator_container"</span>
+<span class="w">        </span><span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+<span class="w">        </span><span class="na">android:layout_height=</span><span class="s">"match_parent"</span>
+<span class="w">        </span><span class="nt">/&gt;</span>
+<span class="nt">&lt;/FrameLayout&gt;</span>
+</code></pre></div>
+<h4 id="pdfnavigatorfragment"><code>PdfNavigatorFragment</code><a class="headerlink" href="#pdfnavigatorfragment" title="Permanent link">&para;</a></h4>
+<p>Use the same approach as described with the <code>EpubNavigatorFragment</code>, using a <code>PdfNavigatorFactory</code> instead.</p>
+<h4 id="imagenavigatorfragment"><code>ImageNavigatorFragment</code><a class="headerlink" href="#imagenavigatorfragment" title="Permanent link">&para;</a></h4>
+<p>Use the same approach as described with the <code>EpubNavigatorFragment</code>, except that there is no <code>ImageNavigatorFactory</code>. Instead, you can build the <code>FragmentFactory</code> directly with:</p>
+<div class="highlight"><pre><span></span><code><span class="n">childFragmentManager</span><span class="p">.</span><span class="na">fragmentFactory</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="n">ImageNavigatorFragment</span><span class="p">.</span><span class="na">createFactory</span><span class="p">(</span>
+<span class="w">        </span><span class="n">publication</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">publication</span><span class="p">,</span>
+<span class="w">        </span><span class="n">initialLocator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">viewModel</span><span class="p">.</span><span class="na">initialLocator</span><span class="p">,</span>
+<span class="w">        </span><span class="n">listener</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span>
+<span class="w">    </span><span class="p">)</span>
+</code></pre></div>
+<h4 id="limitations-of-the-current-fragment-apis">Limitations of the current <code>Fragment</code> APIs<a class="headerlink" href="#limitations-of-the-current-fragment-apis" title="Permanent link">&para;</a></h4>
+<p>The current toolkit API has a limitation regarding the lifecycle of <code>Fragment</code>s. If your <code>Activity</code> is being recreated after Android terminates your application, you must still provide a <code>FragmentFactory</code> in <code>Activity.onCreate()</code>, even though you may no longer have access to a <code>Publication</code> or <code>NavigatorFactory</code> instance.</p>
+<p>To work around this issue, we provide "dummy" factories that you can use to recover during the restoration, before immediately removing the fragment or finishing the activity. Here's an example with the <code>EpubNavigatorFragment</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">onCreate</span><span class="p">(</span><span class="n">savedInstanceState</span><span class="p">:</span><span class="w"> </span><span class="n">Bundle?</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">navigatorFactory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">viewModel</span><span class="p">.</span><span class="na">navigatorFactory</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">navigatorFactory</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// We provide a dummy fragment factory  if the Activity is restored after the</span>
+<span class="w">        </span><span class="c1">// app process was killed because the view model is empty. In that case, finish</span>
+<span class="w">        </span><span class="c1">// the activity as soon as possible and go back to the previous one.</span>
+<span class="w">        </span><span class="n">childFragmentManager</span><span class="p">.</span><span class="na">fragmentFactory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">EpubNavigatorFragment</span><span class="p">.</span><span class="na">createDummyFactory</span><span class="p">()</span>
+
+<span class="w">        </span><span class="k">super</span><span class="p">.</span><span class="na">onCreate</span><span class="p">(</span><span class="n">savedInstanceState</span><span class="p">)</span>
+
+<span class="w">        </span><span class="n">requireActivity</span><span class="p">().</span><span class="na">finish</span><span class="p">()</span>
+
+<span class="w">        </span><span class="k">return</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">childFragmentManager</span><span class="p">.</span><span class="na">fragmentFactory</span><span class="w"> </span><span class="o">=</span>
+<span class="w">        </span><span class="n">navigatorFactory</span><span class="p">.</span><span class="na">createFragmentFactory</span><span class="p">(...)</span>
+
+<span class="w">    </span><span class="k">super</span><span class="p">.</span><span class="na">onCreate</span><span class="p">(</span><span class="n">savedInstanceState</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="audionavigator"><code>AudioNavigator</code><a class="headerlink" href="#audionavigator" title="Permanent link">&para;</a></h3>
+<p>The <code>AudioNavigator</code> is chromeless and does not provide any user interface, allowing you to create your own custom UI.</p>
+<p>First, create an instance of the <code>AudioNavigatorFactory</code>, with the audio engine provider you want to use.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">navigatorFactory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AudioNavigatorFactory</span><span class="p">(</span>
+<span class="w">    </span><span class="n">publication</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">publication</span><span class="p">,</span>
+<span class="w">    </span><span class="n">audioEngineProvider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ExoPlayerEngineProvider</span><span class="p">(</span>
+<span class="w">        </span><span class="n">application</span><span class="p">,</span>
+<span class="w">        </span><span class="n">defaults</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ExoPlayerDefaults</span><span class="p">(</span>
+<span class="w">            </span><span class="n">pitch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.8</span>
+<span class="w">        </span><span class="p">)</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Then, simply request an instance of the <code>AudioNavigator</code> at the given initial location.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">navigator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">navigatorFactory</span><span class="p">.</span><span class="na">createNavigator</span><span class="p">(</span><span class="n">initialLocator</span><span class="p">)</span>
+<span class="n">navigator</span><span class="p">.</span><span class="na">play</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="ttsnavigator"><code>TtsNavigator</code><a class="headerlink" href="#ttsnavigator" title="Permanent link">&para;</a></h3>
+<p>The text-to-speech navigator is very similar to the <code>AudioNavigator</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">navigatorFactory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TtsNavigatorFactory</span><span class="p">(</span>
+<span class="w">    </span><span class="n">application</span><span class="p">,</span>
+<span class="w">    </span><span class="n">publication</span><span class="p">,</span>
+<span class="w">    </span><span class="n">defaults</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AndroidTtsDefaults</span><span class="p">(</span>
+<span class="w">        </span><span class="n">pitch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.8</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="p">)</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">navigatorFactory</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// This publication is not supported by the `TtsNavigator`.</span>
+<span class="w">    </span><span class="k">return</span>
+<span class="p">}</span>
+
+<span class="kd">val</span><span class="w"> </span><span class="nv">navigator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">navigatorFactory</span><span class="p">.</span><span class="na">createNavigator</span><span class="p">(</span><span class="n">initialLocator</span><span class="p">)</span>
+<span class="n">navigator</span><span class="p">.</span><span class="na">play</span><span class="p">()</span>
+</code></pre></div>
+<h2 id="navigating-the-contents-of-the-publication">Navigating the contents of the publication<a class="headerlink" href="#navigating-the-contents-of-the-publication" title="Permanent link">&para;</a></h2>
+<p>The <code>Navigator</code> interface offers various <code>go</code> APIs for navigating the publication. For instance:</p>
+<ul>
+<li>to a link from the <code>publication.tableOfContents</code> or <code>publication.readingOrder</code>: <code>navigator.go(Link)</code></li>
+<li>to a locator from a search result: <code>navigator.go(Locator)</code></li>
+</ul>
+<p>Specialized interfaces add more navigation APIs. For instance, the <code>OverflowableNavigator</code> enables moving to previous or next pages using <code>goForward()</code> and <code>goBackward()</code>.</p>
+<h2 id="reading-progression">Reading progression<a class="headerlink" href="#reading-progression" title="Permanent link">&para;</a></h2>
+<h3 id="saving-and-restoring-the-reading-progression">Saving and restoring the reading progression<a class="headerlink" href="#saving-and-restoring-the-reading-progression" title="Permanent link">&para;</a></h3>
+<p>Navigators don't store any data permanently. Therefore, it is your responsibility to save the last read location in your database and restore it when creating a new Navigator.</p>
+<p>You can observe the current position in the publication with <code>Navigator.currentLocator</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">onViewCreated</span><span class="p">(</span><span class="n">view</span><span class="p">:</span><span class="w"> </span><span class="n">View</span><span class="p">,</span><span class="w"> </span><span class="n">savedInstanceState</span><span class="p">:</span><span class="w"> </span><span class="n">Bundle?</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">super</span><span class="p">.</span><span class="na">onViewCreated</span><span class="p">(</span><span class="n">view</span><span class="p">,</span><span class="w"> </span><span class="n">savedInstanceState</span><span class="p">)</span>
+
+<span class="w">    </span><span class="n">viewLifecycleOwner</span><span class="p">.</span><span class="na">lifecycleScope</span><span class="p">.</span><span class="na">launch</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">viewLifecycleOwner</span><span class="p">.</span><span class="na">repeatOnLifecycle</span><span class="p">(</span><span class="n">Lifecycle</span><span class="p">.</span><span class="na">State</span><span class="p">.</span><span class="na">STARTED</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">navigator</span><span class="p">.</span><span class="na">currentLocator</span>
+<span class="w">                </span><span class="p">.</span><span class="na">onEach</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">viewModel</span><span class="p">.</span><span class="na">saveReadingProgression</span><span class="p">(</span><span class="nb">it</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+<span class="w">                </span><span class="p">.</span><span class="na">launchIn</span><span class="p">(</span><span class="k">this</span><span class="p">)</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The <code>Locator</code> object may be serialized to JSON in your database, and deserialized to set the initial location when creating the navigator, as explained in <a href="#instantiating-a-navigator">the previous section</a>.</p>
+<p>To restore the reading progression, pass the saved <code>Locator</code> to the <code>initialLocator</code> parameter when creating the navigator### Bookmarking the current location</p>
+<h3 id="bookmarking-the-current-location">Bookmarking the current location<a class="headerlink" href="#bookmarking-the-current-location" title="Permanent link">&para;</a></h3>
+<p>Use a Navigator's <code>currentLocator</code> property to persists the current position, for instance as a bookmark.</p>
+<p>After the user selects a bookmark from your user interface, navigate to it using <code>navigator.go(bookmark.locator)</code>.</p>
+<h3 id="displaying-a-progression-slider">Displaying a progression slider<a class="headerlink" href="#displaying-a-progression-slider" title="Permanent link">&para;</a></h3>
+<p>To display a percentage-based progression slider, use the <code>locations.totalProgression</code> property of the <code>currentLocator</code>. This property holds the total progression across an entire publication.</p>
+<p>Given a progression from 0 to 1, you can obtain a <code>Locator</code> object from the <code>Publication</code>. This can be used to navigate to a specific percentage within the publication.</p>
+<div class="highlight"><pre><span></span><code><span class="n">publication</span><span class="p">.</span><span class="na">locateProgression</span><span class="p">(</span><span class="n">progression</span><span class="p">)</span><span class="o">?.</span><span class="na">let</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">locator</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">    </span><span class="n">navigator</span><span class="p">.</span><span class="na">go</span><span class="p">(</span><span class="n">locator</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="displaying-the-number-of-positions">Displaying the number of positions<a class="headerlink" href="#displaying-the-number-of-positions" title="Permanent link">&para;</a></h3>
+<p>:warning: Readium does not have the concept of pages, as they are not useful when dealing with reflowable publications across different screen sizes. Instead, we use <a href="https://readium.org/architecture/models/locators/positions/"><strong>positions</strong></a> which remain stable even when the user changes the font size or device.</p>
+<p>Not all Navigators provide positions, but most <code>VisualNavigator</code> implementations do. Verify if <code>publication.positions</code> is not empty to determine if it is supported.</p>
+<p>To find the total positions in the publication, use <code>publication.positions().size</code>. You can get the current position with <code>navigator.currentLocator.value.locations.position</code>.</p>
+<h2 id="navigating-with-edge-taps-and-keyboard-arrows">Navigating with edge taps and keyboard arrows<a class="headerlink" href="#navigating-with-edge-taps-and-keyboard-arrows" title="Permanent link">&para;</a></h2>
+<p>Readium provides a <code>DirectionalNavigationAdapter</code> helper to automatically turn pages when the user hit the arrow and space keys on their keyboard or tap the edge of the screen.</p>
+<p>It's easy to set it up with any implementation of <code>OverflowableNavigator</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="p">(</span><span class="n">navigator</span><span class="w"> </span><span class="k">as?</span><span class="w"> </span><span class="n">OverflowableNavigator</span><span class="p">)</span><span class="o">?.</span><span class="na">apply</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">addInputListener</span><span class="p">(</span><span class="n">DirectionalNavigationAdapter</span><span class="p">(</span><span class="k">this</span><span class="p">))</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><code>DirectionalNavigationAdapter</code> offers a lot of customization options. Take a look at its API.</p>
+<h2 id="user-preferences">User preferences<a class="headerlink" href="#user-preferences" title="Permanent link">&para;</a></h2>
+<p>Readium Navigators support user preferences, such as font size or background color. Take a look at <a href="../preferences/">the Preferences API guide</a> for more information.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 Readium Foundation
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.path"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

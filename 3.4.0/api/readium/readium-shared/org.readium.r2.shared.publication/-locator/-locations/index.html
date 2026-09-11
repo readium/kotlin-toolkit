@@ -1,0 +1,348 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>Locations</title>
+<link href="../../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../../../index.html" tabindex="1">
+                    Readium
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":readium:readium-shared/release">release</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":readium:readium-shared/release" data-filter=":readium:readium-shared/release">
+                                <span class="checkbox--icon"></span>
+                                release
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Readium
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="readium-shared::org.readium.r2.shared.publication/Locator.Locations///PointingToDeclaration//-1013710462">
+  <div class="breadcrumbs"><a href="../../../index.html">readium-shared</a><span class="delimiter">/</span><a href="../../index.html">org.readium.r2.shared.publication</a><span class="delimiter">/</span><a href="../index.html">Locator</a><span class="delimiter">/</span><span class="current">Locations</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Locations</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">Locations</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>fragments<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyList()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>progression<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double/index.html">Double</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>position<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>totalProgression<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double/index.html">Double</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>otherLocations<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyMap()</span></span><span class="token punctuation">)</span> : <a href="../../../org.readium.r2.shared/-j-s-o-nable/index.html">JSONable</a>, <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div><p class="paragraph">One or more alternative expressions of the location. https://github.com/readium/architecture/tree/master/models/locators#the-location-object</p><h4 class="tableheader">Parameters</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>fragments</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Contains one or more fragment in the resource referenced by the <a href="../index.html">Locator</a>.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>progression</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Progression in the resource expressed as a percentage (between 0 and 1).</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>position</span></span></u></div></span></div><div><div class="title"><p class="paragraph">An index in the publication (&gt;= 1).</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>total</span><wbr><span><span>Progression</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Progression in the publication expressed as a percentage (between 0         and 1).</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>other</span><wbr><span><span>Locations</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Additional locations for extensions.</p></div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button><button class="section-tab" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION,EXTENSION_PROPERTY,EXTENSION_FUNCTION">Members &amp; Extensions</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="tableheader">Constructors</h2>
+        <div class="table"><a data-name="-850719715%2FConstructors%2F-1013710462" anchor-label="Locations" id="-850719715%2FConstructors%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-locations.html"><span><span>Locations</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-850719715%2FConstructors%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fragments<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyList()<span class="token punctuation">, </span></span><span class="parameter ">progression<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double/index.html">Double</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">position<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">totalProgression<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double/index.html">Double</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">otherLocations<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyMap()</span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="-2009295848%2FClasslikes%2F-1013710462" anchor-label="Companion" id="-2009295848%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2009295848%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="1954252744%2FProperties%2F-1013710462" anchor-label="cssSelector" id="1954252744%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../../org.readium.r2.shared.publication.html/css-selector.html"><span>css</span><wbr><span><span>Selector</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1954252744%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="index.html">Locator.Locations</a><span class="token punctuation">.</span><a href="../../../org.readium.r2.shared.publication.html/css-selector.html">cssSelector</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">A CSS Selector.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1414138517%2FProperties%2F-1013710462" anchor-label="domRange" id="-1414138517%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../../org.readium.r2.shared.publication.html/dom-range.html"><span>dom</span><wbr><span><span>Range</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1414138517%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="index.html">Locator.Locations</a><span class="token punctuation">.</span><a href="../../../org.readium.r2.shared.publication.html/dom-range.html">domRange</a><span class="token operator">: </span><a href="../../../org.readium.r2.shared.publication.html/-dom-range/index.html">DomRange</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">An HTML DOM range.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1168226318%2FProperties%2F-1013710462" anchor-label="fragments" id="1168226318%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="fragments.html"><span><span>fragments</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1168226318%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="fragments.html">fragments</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1866852677%2FProperties%2F-1013710462" anchor-label="otherLocations" id="-1866852677%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="other-locations.html"><span>other</span><wbr><span><span>Locations</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1866852677%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="other-locations.html">otherLocations</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-358767819%2FProperties%2F-1013710462" anchor-label="partialCfi" id="-358767819%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../../org.readium.r2.shared.publication.html/partial-cfi.html"><span>partial</span><wbr><span><span>Cfi</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-358767819%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="index.html">Locator.Locations</a><span class="token punctuation">.</span><a href="../../../org.readium.r2.shared.publication.html/partial-cfi.html">partialCfi</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph"><a href="../../../org.readium.r2.shared.publication.html/partial-cfi.html">partialCfi</a> is an expression conforming to the "right-hand" side of the EPUB CFI syntax, that is to say: without the EPUB-specific OPF spine item reference that precedes the first ! exclamation mark (which denotes the "step indirection" into a publication document). Note that the wrapping epubcfi(***) syntax is not used for the <a href="../../../org.readium.r2.shared.publication.html/partial-cfi.html">partialCfi</a> string, i.e. the "fragment" part of the CFI grammar is ignored.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="667887904%2FProperties%2F-1013710462" anchor-label="position" id="667887904%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="position.html"><span><span>position</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="667887904%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="position.html">position</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="503397238%2FProperties%2F-1013710462" anchor-label="progression" id="503397238%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="progression.html"><span><span>progression</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="503397238%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="progression.html">progression</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double/index.html">Double</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1593151794%2FProperties%2F-1013710462" anchor-label="totalProgression" id="1593151794%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="total-progression.html"><span>total</span><wbr><span><span>Progression</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1593151794%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="total-progression.html">totalProgression</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double/index.html">Double</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="-1578325224%2FFunctions%2F-1013710462" anchor-label="describeContents" id="-1578325224%2FFunctions%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../../org.readium.r2.shared.util.mediatype/-media-type/index.html#-1578325224%2FFunctions%2F-1013710462"><span>describe</span><wbr><span><span>Contents</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1578325224%2FFunctions%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="../../../org.readium.r2.shared.util.mediatype/-media-type/index.html#-1578325224%2FFunctions%2F-1013710462"><span class="token function">describeContents</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-107804247%2FFunctions%2F-1013710462" anchor-label="get" id="-107804247%2FFunctions%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get.html"><span><span>get</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-107804247%2FFunctions%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">operator </span><span class="token keyword">fun </span><a href="get.html"><span class="token function">get</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">key<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Syntactic sugar to access the <a href="../../../../../readium/readium-shared/org.readium.r2.shared.publication/-locator/-locations/--root--.html">otherLocations</a> values by subscripting <a href="index.html">Locations</a> directly. <code class="lang-kotlin">locations["cssSelector"] == locations.otherLocations["cssSelector"]</code></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-850914138%2FFunctions%2F-1013710462" anchor-label="toJSON" id="-850914138%2FFunctions%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-j-s-o-n.html"><span>to</span><wbr><span><span>JSON</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-850914138%2FFunctions%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="to-j-s-o-n.html"><span class="token function">toJSON</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a></div><div class="brief "><p class="paragraph">Serializes the object to its JSON representation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1754457655%2FFunctions%2F-1013710462" anchor-label="writeToParcel" id="-1754457655%2FFunctions%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../../org.readium.r2.shared.util.mediatype/-media-type/index.html#-1754457655%2FFunctions%2F-1013710462"><span>write</span><wbr><span>To</span><wbr><span><span>Parcel</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1754457655%2FFunctions%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="../../../org.readium.r2.shared.util.mediatype/-media-type/index.html#-1754457655%2FFunctions%2F-1013710462"><span class="token function">writeToParcel</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/os/Parcel.html">Parcel</a><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

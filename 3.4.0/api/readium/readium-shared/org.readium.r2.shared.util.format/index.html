@@ -1,0 +1,545 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>org.readium.r2.shared.util.format</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
+                    Readium
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":readium:readium-shared/release">release</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":readium:readium-shared/release" data-filter=":readium:readium-shared/release">
+                                <span class="checkbox--icon"></span>
+                                release
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Readium
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="package" id="content" pageids="readium-shared::org.readium.r2.shared.util.format////PointingToDeclaration//-1013710462">
+  <div class="breadcrumbs"><a href="../index.html">readium-shared</a><span class="delimiter">/</span><span class="current">org.readium.r2.shared.util.format</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="1831463844%2FClasslikes%2F-1013710462" anchor-label="ArchiveSniffer" id="1831463844%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-archive-sniffer/index.html"><span>Archive</span><wbr><span><span>Sniffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1831463844%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-archive-sniffer/index.html">ArchiveSniffer</a> : <a href="-format-sniffer/index.html">FormatSniffer</a></div><div class="brief "><p class="paragraph">Sniffs a simple Archive-based publication format, like Comic Book Archive or Zipped Audio Book.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="994372024%2FClasslikes%2F-1013710462" anchor-label="AudioSniffer" id="994372024%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-audio-sniffer/index.html"><span>Audio</span><wbr><span><span>Sniffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="994372024%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-audio-sniffer/index.html">AudioSniffer</a> : <a href="-format-sniffer/index.html">FormatSniffer</a></div><div class="brief "><p class="paragraph">Sniffs audio files.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2052480633%2FClasslikes%2F-1013710462" anchor-label="BitmapSniffer" id="2052480633%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-bitmap-sniffer/index.html"><span>Bitmap</span><wbr><span><span>Sniffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2052480633%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-bitmap-sniffer/index.html">BitmapSniffer</a> : <a href="-format-sniffer/index.html">FormatSniffer</a></div><div class="brief "><p class="paragraph">Sniffs a bitmap image.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="436236775%2FClasslikes%2F-1013710462" anchor-label="BlobSniffer" id="436236775%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-blob-sniffer/index.html"><span>Blob</span><wbr><span><span>Sniffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="436236775%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-blob-sniffer/index.html">BlobSniffer</a></div><div class="brief "><p class="paragraph">Tries to refine a <a href="-format/index.html">Format</a> by sniffing a <a href="../org.readium.r2.shared.util.data/-readable/index.html">Readable</a> blob.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-104668096%2FClasslikes%2F-1013710462" anchor-label="CompositeFormatSniffer" id="-104668096%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-composite-format-sniffer/index.html"><span>Composite</span><wbr><span>Format</span><wbr><span><span>Sniffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-104668096%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="-composite-format-sniffer/index.html">CompositeFormatSniffer</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">sniffers<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-format-sniffer/index.html">FormatSniffer</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span> : <a href="-format-sniffer/index.html">FormatSniffer</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2086877085%2FClasslikes%2F-1013710462" anchor-label="ContainerSniffer" id="-2086877085%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-container-sniffer/index.html"><span>Container</span><wbr><span><span>Sniffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2086877085%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-container-sniffer/index.html">ContainerSniffer</a></div><div class="brief "><p class="paragraph">Tries to refine a <a href="-format/index.html">Format</a> by sniffing a <a href="../org.readium.r2.shared.util.data/-container/index.html">Container</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-14864667%2FClasslikes%2F-1013710462" anchor-label="CssSniffer" id="-14864667%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-css-sniffer/index.html"><span>Css</span><wbr><span><span>Sniffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-14864667%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-css-sniffer/index.html">CssSniffer</a> : <a href="-format-sniffer/index.html">FormatSniffer</a></div><div class="brief "><p class="paragraph">Sniffs CSS.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1815792407%2FClasslikes%2F-1013710462" anchor-label="EpubDrmSniffer" id="-1815792407%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-epub-drm-sniffer/index.html"><span>Epub</span><wbr><span>Drm</span><wbr><span><span>Sniffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1815792407%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-epub-drm-sniffer/index.html">EpubDrmSniffer</a> : <a href="-format-sniffer/index.html">FormatSniffer</a></div><div class="brief "><p class="paragraph">Sniffs LCP and Adept protection on EPUBs.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2132823358%2FClasslikes%2F-1013710462" anchor-label="EpubSniffer" id="-2132823358%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-epub-sniffer/index.html"><span>Epub</span><wbr><span><span>Sniffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2132823358%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-epub-sniffer/index.html">EpubSniffer</a> : <a href="-format-sniffer/index.html">FormatSniffer</a></div><div class="brief "><p class="paragraph">Sniffs an EPUB publication.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1029487142%2FClasslikes%2F-1013710462" anchor-label="Format" id="1029487142%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-format/index.html"><span><span>Format</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1029487142%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-format/index.html">Format</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>specification<span class="token operator">: </span><a href="-format-specification/index.html">FormatSpecification</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>mediaType<span class="token operator">: </span><a href="../org.readium.r2.shared.util.mediatype/-media-type/index.html">MediaType</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>fileExtension<span class="token operator">: </span><a href="../org.readium.r2.shared.util/-file-extension/index.html">FileExtension</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2031303216%2FClasslikes%2F-1013710462" anchor-label="FormatHints" id="2031303216%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-format-hints/index.html"><span>Format</span><wbr><span><span>Hints</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2031303216%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-format-hints/index.html">FormatHints</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>mediaTypes<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../org.readium.r2.shared.util.mediatype/-media-type/index.html">MediaType</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyList()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>fileExtensions<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../org.readium.r2.shared.util/-file-extension/index.html">FileExtension</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyList()</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Bundle of media type and file extension hints for the <a href="-format-hints-sniffer/index.html">FormatHintsSniffer</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1966441975%2FClasslikes%2F-1013710462" anchor-label="FormatHintsSniffer" id="1966441975%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-format-hints-sniffer/index.html"><span>Format</span><wbr><span>Hints</span><wbr><span><span>Sniffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1966441975%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-format-hints-sniffer/index.html">FormatHintsSniffer</a></div><div class="brief "><p class="paragraph">Tries to guess a <a href="-format/index.html">Format</a> from media type and file extension hints.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2073017023%2FClasslikes%2F-1013710462" anchor-label="FormatSniffer" id="-2073017023%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-format-sniffer/index.html"><span>Format</span><wbr><span><span>Sniffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2073017023%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-format-sniffer/index.html">FormatSniffer</a> : <a href="-format-hints-sniffer/index.html">FormatHintsSniffer</a>, <a href="-blob-sniffer/index.html">BlobSniffer</a>, <a href="-container-sniffer/index.html">ContainerSniffer</a></div><div class="brief "><p class="paragraph">Tries to refine a <a href="-format/index.html">Format</a> by sniffing format hints or content.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="345771225%2FClasslikes%2F-1013710462" anchor-label="FormatSpecification" id="345771225%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-format-specification/index.html"><span>Format</span><wbr><span><span>Specification</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="345771225%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-jvm-inline/index.html"><span class="token annotation builtin">JvmInline</span></a></div></div><span class="token keyword">value </span><span class="token keyword">class </span><a href="-format-specification/index.html">FormatSpecification</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>specifications<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="-specification/index.html">Specification</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2054132213%2FClasslikes%2F-1013710462" anchor-label="HtmlSniffer" id="2054132213%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-html-sniffer/index.html"><span>Html</span><wbr><span><span>Sniffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2054132213%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-html-sniffer/index.html">HtmlSniffer</a> : <a href="-format-sniffer/index.html">FormatSniffer</a></div><div class="brief "><p class="paragraph">Sniffs an HTML or XHTML document.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1311317801%2FClasslikes%2F-1013710462" anchor-label="JavaScriptSniffer" id="-1311317801%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-java-script-sniffer/index.html"><span>Java</span><wbr><span>Script</span><wbr><span><span>Sniffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1311317801%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-java-script-sniffer/index.html">JavaScriptSniffer</a> : <a href="-format-sniffer/index.html">FormatSniffer</a></div><div class="brief "><p class="paragraph">Sniffs JavaScript.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1912881970%2FClasslikes%2F-1013710462" anchor-label="JsonSniffer" id="1912881970%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-json-sniffer/index.html"><span>Json</span><wbr><span><span>Sniffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1912881970%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-json-sniffer/index.html">JsonSniffer</a> : <a href="-format-sniffer/index.html">FormatSniffer</a></div><div class="brief "><p class="paragraph">Sniffs a JSON document.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="569660274%2FClasslikes%2F-1013710462" anchor-label="LcpLicenseSniffer" id="569660274%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-lcp-license-sniffer/index.html"><span>Lcp</span><wbr><span>License</span><wbr><span><span>Sniffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="569660274%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-lcp-license-sniffer/index.html">LcpLicenseSniffer</a> : <a href="-format-sniffer/index.html">FormatSniffer</a></div><div class="brief "><p class="paragraph">Sniffs an LCP License Document.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2123885500%2FClasslikes%2F-1013710462" anchor-label="LpfSniffer" id="-2123885500%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-lpf-sniffer/index.html"><span>Lpf</span><wbr><span><span>Sniffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2123885500%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-lpf-sniffer/index.html">LpfSniffer</a> : <a href="-format-sniffer/index.html">FormatSniffer</a></div><div class="brief "><p class="paragraph">Sniffs a Lightweight Packaging Format (LPF).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-231439901%2FClasslikes%2F-1013710462" anchor-label="Opds1Sniffer" id="-231439901%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-opds1-sniffer/index.html"><span><span>Opds1Sniffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-231439901%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-opds1-sniffer/index.html">Opds1Sniffer</a> : <a href="-format-sniffer/index.html">FormatSniffer</a></div><div class="brief "><p class="paragraph">Sniffs an OPDS1 document.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1879850468%2FClasslikes%2F-1013710462" anchor-label="Opds2Sniffer" id="1879850468%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-opds2-sniffer/index.html"><span><span>Opds2Sniffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1879850468%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-opds2-sniffer/index.html">Opds2Sniffer</a> : <a href="-format-sniffer/index.html">FormatSniffer</a></div><div class="brief "><p class="paragraph">Sniffs an OPDS 2 document.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1062068692%2FClasslikes%2F-1013710462" anchor-label="PdfSniffer" id="1062068692%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-pdf-sniffer/index.html"><span>Pdf</span><wbr><span><span>Sniffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1062068692%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-pdf-sniffer/index.html">PdfSniffer</a> : <a href="-format-sniffer/index.html">FormatSniffer</a></div><div class="brief "><p class="paragraph">Sniffs a PDF document.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1002235141%2FClasslikes%2F-1013710462" anchor-label="RarSniffer" id="1002235141%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-rar-sniffer/index.html"><span>Rar</span><wbr><span><span>Sniffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1002235141%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-rar-sniffer/index.html">RarSniffer</a> : <a href="-format-sniffer/index.html">FormatSniffer</a></div><div class="brief "><p class="paragraph">Sniffs a RAR archive.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-360934710%2FClasslikes%2F-1013710462" anchor-label="RpfSniffer" id="-360934710%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-rpf-sniffer/index.html"><span>Rpf</span><wbr><span><span>Sniffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-360934710%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-rpf-sniffer/index.html">RpfSniffer</a> : <a href="-format-sniffer/index.html">FormatSniffer</a></div><div class="brief "><p class="paragraph">Sniffs a Readium Web Publication, protected or not by LCP.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1856572748%2FClasslikes%2F-1013710462" anchor-label="RwpmSniffer" id="1856572748%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-rwpm-sniffer/index.html"><span>Rwpm</span><wbr><span><span>Sniffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1856572748%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-rwpm-sniffer/index.html">RwpmSniffer</a> : <a href="-format-sniffer/index.html">FormatSniffer</a></div><div class="brief "><p class="paragraph">Sniffs a Readium Web Manifest.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1205534462%2FClasslikes%2F-1013710462" anchor-label="Specification" id="-1205534462%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-specification/index.html"><span><span>Specification</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1205534462%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-specification/index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="553527279%2FClasslikes%2F-1013710462" anchor-label="W3cWpubSniffer" id="553527279%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-w3c-wpub-sniffer/index.html"><span>W3c</span><wbr><span>Wpub</span><wbr><span><span>Sniffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="553527279%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-w3c-wpub-sniffer/index.html">W3cWpubSniffer</a> : <a href="-format-sniffer/index.html">FormatSniffer</a></div><div class="brief "><p class="paragraph">Sniffs a W3C Web Publication Manifest.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1607568387%2FClasslikes%2F-1013710462" anchor-label="ZipSniffer" id="1607568387%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-zip-sniffer/index.html"><span>Zip</span><wbr><span><span>Sniffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1607568387%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-zip-sniffer/index.html">ZipSniffer</a> : <a href="-format-sniffer/index.html">FormatSniffer</a></div><div class="brief "><p class="paragraph">Sniffs a ZIP archive.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

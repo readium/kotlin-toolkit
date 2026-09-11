@@ -1,0 +1,756 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>Specification</title>
+<link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../../index.html" tabindex="1">
+                    Readium
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":readium:readium-shared/release">release</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":readium:readium-shared/release" data-filter=":readium:readium-shared/release">
+                                <span class="checkbox--icon"></span>
+                                release
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Readium
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="readium-shared::org.readium.r2.shared.util.format/Specification///PointingToDeclaration//-1013710462">
+  <div class="breadcrumbs"><a href="../../index.html">readium-shared</a><span class="delimiter">/</span><a href="../index.html">org.readium.r2.shared.util.format</a><span class="delimiter">/</span><span class="current">Specification</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Specification</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">interface </span><a href="index.html">Specification</a></div><h4 class="tableheader">Inheritors</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-zip/index.html">Zip</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-rar/index.html">Rar</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-json/index.html">Json</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-xml/index.html">Xml</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-w3c-pub-manifest/index.html">W3cPubManifest</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-rwpm/index.html">Rwpm</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-problem-details/index.html">ProblemDetails</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-lcp-license/index.html">LcpLicense</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-pdf/index.html">Pdf</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-html/index.html">Html</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-lcp/index.html">Lcp</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-adept/index.html">Adept</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-avif/index.html">Avif</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-bmp/index.html">Bmp</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-gif/index.html">Gif</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-jpeg/index.html">Jpeg</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-jxl/index.html">Jxl</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-png/index.html">Png</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-tiff/index.html">Tiff</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-webp/index.html">Webp</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-aac/index.html">Aac</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-aiff/index.html">Aiff</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-flac/index.html">Flac</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-mp4/index.html">Mp4</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-mp3/index.html">Mp3</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-ogg/index.html">Ogg</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-opus/index.html">Opus</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-wav/index.html">Wav</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-webm/index.html">Webm</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-epub/index.html">Epub</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-rpf/index.html">Rpf</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-lpf/index.html">Lpf</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-informal-audiobook/index.html">InformalAudiobook</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-informal-comic/index.html">InformalComic</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-opds1-catalog/index.html">Opds1Catalog</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-opds1-entry/index.html">Opds1Entry</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-opds2-catalog/index.html">Opds2Catalog</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-opds2-publication/index.html">Opds2Publication</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-opds-authentication/index.html">OpdsAuthentication</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-java-script/index.html">JavaScript</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-css/index.html">Css</a></div></span></div><div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="1920048365%2FClasslikes%2F-1013710462" anchor-label="Aac" id="1920048365%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-aac/index.html"><span><span>Aac</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1920048365%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-aac/index.html">Aac</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1254254422%2FClasslikes%2F-1013710462" anchor-label="Adept" id="-1254254422%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-adept/index.html"><span><span>Adept</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1254254422%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-adept/index.html">Adept</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-245468534%2FClasslikes%2F-1013710462" anchor-label="Aiff" id="-245468534%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-aiff/index.html"><span><span>Aiff</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-245468534%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-aiff/index.html">Aiff</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-672201568%2FClasslikes%2F-1013710462" anchor-label="Avif" id="-672201568%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-avif/index.html"><span><span>Avif</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-672201568%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-avif/index.html">Avif</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="723035627%2FClasslikes%2F-1013710462" anchor-label="Bmp" id="723035627%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-bmp/index.html"><span><span>Bmp</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="723035627%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-bmp/index.html">Bmp</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1086078204%2FClasslikes%2F-1013710462" anchor-label="Companion" id="-1086078204%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1086078204%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2036075309%2FClasslikes%2F-1013710462" anchor-label="Css" id="2036075309%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-css/index.html"><span><span>Css</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2036075309%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-css/index.html">Css</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2135955718%2FClasslikes%2F-1013710462" anchor-label="Epub" id="-2135955718%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-epub/index.html"><span><span>Epub</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2135955718%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-epub/index.html">Epub</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1849668106%2FClasslikes%2F-1013710462" anchor-label="Flac" id="1849668106%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-flac/index.html"><span><span>Flac</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1849668106%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-flac/index.html">Flac</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-412333940%2FClasslikes%2F-1013710462" anchor-label="Gif" id="-412333940%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-gif/index.html"><span><span>Gif</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-412333940%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-gif/index.html">Gif</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="131623719%2FClasslikes%2F-1013710462" anchor-label="Html" id="131623719%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-html/index.html"><span><span>Html</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="131623719%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-html/index.html">Html</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="472184613%2FClasslikes%2F-1013710462" anchor-label="InformalAudiobook" id="472184613%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-informal-audiobook/index.html"><span>Informal</span><wbr><span><span>Audiobook</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="472184613%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-informal-audiobook/index.html">InformalAudiobook</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1477047927%2FClasslikes%2F-1013710462" anchor-label="InformalComic" id="-1477047927%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-informal-comic/index.html"><span>Informal</span><wbr><span><span>Comic</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1477047927%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-informal-comic/index.html">InformalComic</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="630143685%2FClasslikes%2F-1013710462" anchor-label="JavaScript" id="630143685%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-java-script/index.html"><span>Java</span><wbr><span><span>Script</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="630143685%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-java-script/index.html">JavaScript</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1016270582%2FClasslikes%2F-1013710462" anchor-label="Jpeg" id="-1016270582%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-jpeg/index.html"><span><span>Jpeg</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1016270582%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-jpeg/index.html">Jpeg</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-537135990%2FClasslikes%2F-1013710462" anchor-label="Json" id="-537135990%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-json/index.html"><span><span>Json</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-537135990%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-json/index.html">Json</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="548883634%2FClasslikes%2F-1013710462" anchor-label="Jxl" id="548883634%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-jxl/index.html"><span><span>Jxl</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="548883634%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-jxl/index.html">Jxl</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1444431895%2FClasslikes%2F-1013710462" anchor-label="Lcp" id="1444431895%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-lcp/index.html"><span><span>Lcp</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1444431895%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-lcp/index.html">Lcp</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1169928330%2FClasslikes%2F-1013710462" anchor-label="LcpLicense" id="1169928330%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-lcp-license/index.html"><span>Lcp</span><wbr><span><span>License</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1169928330%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-lcp-license/index.html">LcpLicense</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="750314158%2FClasslikes%2F-1013710462" anchor-label="Lpf" id="750314158%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-lpf/index.html"><span><span>Lpf</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="750314158%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-lpf/index.html">Lpf</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1086432544%2FClasslikes%2F-1013710462" anchor-label="Mp3" id="-1086432544%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-mp3/index.html"><span><span>Mp3</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1086432544%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-mp3/index.html">Mp3</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1055412737%2FClasslikes%2F-1013710462" anchor-label="Mp4" id="-1055412737%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-mp4/index.html"><span><span>Mp4</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1055412737%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-mp4/index.html">Mp4</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-47467231%2FClasslikes%2F-1013710462" anchor-label="Ogg" id="-47467231%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-ogg/index.html"><span><span>Ogg</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-47467231%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-ogg/index.html">Ogg</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1601611366%2FClasslikes%2F-1013710462" anchor-label="Opds1Catalog" id="-1601611366%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-opds1-catalog/index.html"><span><span>Opds1Catalog</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1601611366%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-opds1-catalog/index.html">Opds1Catalog</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-883521567%2FClasslikes%2F-1013710462" anchor-label="Opds1Entry" id="-883521567%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-opds1-entry/index.html"><span><span>Opds1Entry</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-883521567%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-opds1-entry/index.html">Opds1Entry</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="509679003%2FClasslikes%2F-1013710462" anchor-label="Opds2Catalog" id="509679003%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-opds2-catalog/index.html"><span><span>Opds2Catalog</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="509679003%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-opds2-catalog/index.html">Opds2Catalog</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="350147944%2FClasslikes%2F-1013710462" anchor-label="Opds2Publication" id="350147944%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-opds2-publication/index.html"><span><span>Opds2Publication</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="350147944%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-opds2-publication/index.html">Opds2Publication</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-46319894%2FClasslikes%2F-1013710462" anchor-label="OpdsAuthentication" id="-46319894%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-opds-authentication/index.html"><span>Opds</span><wbr><span><span>Authentication</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-46319894%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-opds-authentication/index.html">OpdsAuthentication</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1027430675%2FClasslikes%2F-1013710462" anchor-label="Opus" id="1027430675%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-opus/index.html"><span><span>Opus</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1027430675%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-opus/index.html">Opus</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1076901662%2FClasslikes%2F-1013710462" anchor-label="Pdf" id="1076901662%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-pdf/index.html"><span><span>Pdf</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1076901662%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-pdf/index.html">Pdf</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2134127047%2FClasslikes%2F-1013710462" anchor-label="Png" id="2134127047%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-png/index.html"><span><span>Png</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2134127047%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-png/index.html">Png</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1255945711%2FClasslikes%2F-1013710462" anchor-label="ProblemDetails" id="1255945711%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-problem-details/index.html"><span>Problem</span><wbr><span><span>Details</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1255945711%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-problem-details/index.html">ProblemDetails</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1945175795%2FClasslikes%2F-1013710462" anchor-label="Rar" id="-1945175795%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-rar/index.html"><span><span>Rar</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1945175795%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-rar/index.html">Rar</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-778105112%2FClasslikes%2F-1013710462" anchor-label="Rpf" id="-778105112%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-rpf/index.html"><span><span>Rpf</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-778105112%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-rpf/index.html">Rpf</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="624358320%2FClasslikes%2F-1013710462" anchor-label="Rwpm" id="624358320%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-rwpm/index.html"><span><span>Rwpm</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="624358320%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-rwpm/index.html">Rwpm</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="38561821%2FClasslikes%2F-1013710462" anchor-label="Tiff" id="38561821%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-tiff/index.html"><span><span>Tiff</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="38561821%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-tiff/index.html">Tiff</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1440905651%2FClasslikes%2F-1013710462" anchor-label="W3cPubManifest" id="-1440905651%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-w3c-pub-manifest/index.html"><span>W3c</span><wbr><span>Pub</span><wbr><span><span>Manifest</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1440905651%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-w3c-pub-manifest/index.html">W3cPubManifest</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1200188004%2FClasslikes%2F-1013710462" anchor-label="Wav" id="1200188004%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-wav/index.html"><span><span>Wav</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1200188004%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-wav/index.html">Wav</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-492504327%2FClasslikes%2F-1013710462" anchor-label="Webm" id="-492504327%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-webm/index.html"><span><span>Webm</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-492504327%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-webm/index.html">Webm</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-399444906%2FClasslikes%2F-1013710462" anchor-label="Webp" id="-399444906%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-webp/index.html"><span><span>Webp</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-399444906%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-webp/index.html">Webp</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-710280295%2FClasslikes%2F-1013710462" anchor-label="Xml" id="-710280295%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-xml/index.html"><span><span>Xml</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-710280295%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-xml/index.html">Xml</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-647162929%2FClasslikes%2F-1013710462" anchor-label="Zip" id="-647162929%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-zip/index.html"><span><span>Zip</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-647162929%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-zip/index.html">Zip</a> : <a href="index.html">Specification</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,374 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>ExoPlayerEngine</title>
+<link href="../../../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../../../../index.html" tabindex="1">
+                    Readium
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release">release</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release" data-filter=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release">
+                                <span class="checkbox--icon"></span>
+                                release
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Readium
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="readium-adapter-exoplayer-audio::org.readium.adapter.exoplayer.audio/ExoPlayerEngine///PointingToDeclaration//1152407126">
+  <div class="breadcrumbs"><a href="../../index.html">readium-adapter-exoplayer-audio</a><span class="delimiter">/</span><a href="../index.html">org.readium.adapter.exoplayer.audio</a><span class="delimiter">/</span><span class="current">ExoPlayerEngine</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Exo</span><wbr><span>Player</span><wbr><span><span>Engine</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">ExoPlayerEngine</a> : <a href="../../../../../../readium/navigators/media/readium-navigator-media-audio/org.readium.navigator.media.audio/-audio-engine/index.html">AudioEngine</a><span class="token operator">&lt;</span><a href="../-exo-player-settings/index.html">ExoPlayerSettings</a><span class="token punctuation">, </span><a href="../-exo-player-preferences/index.html">ExoPlayerPreferences</a><span class="token operator">&gt; </span></div><p class="paragraph">An <a href="../../../../../../readium/navigators/media/readium-navigator-media-audio/org.readium.navigator.media.audio/-audio-engine/index.html">AudioEngine</a> based on Media3 ExoPlayer.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="1374313674%2FClasslikes%2F1152407126" anchor-label="Companion" id="1374313674%2FClasslikes%2F1152407126" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1374313674%2FClasslikes%2F1152407126"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1383287712%2FClasslikes%2F1152407126" anchor-label="Configuration" id="1383287712%2FClasslikes%2F1152407126" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-configuration/index.html"><span><span>Configuration</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1383287712%2FClasslikes%2F1152407126"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-configuration/index.html">Configuration</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>positionRefreshRate<span class="token operator">: </span><a href="../../../../../../readium/readium-shared/org.readium.r2.shared.util.units/-hz/index.html">Hz</a><span class="token operator"> = </span>2.0.hz<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>seekBackwardIncrement<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-duration/index.html">Duration</a><span class="token operator"> = </span>15.seconds<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>seekForwardIncrement<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-duration/index.html">Duration</a><span class="token operator"> = </span>30.seconds</span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-390145074%2FClasslikes%2F1152407126" anchor-label="Error" id="-390145074%2FClasslikes%2F1152407126" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-error/index.html"><span><span>Error</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-390145074%2FClasslikes%2F1152407126"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="-error/index.html">Error</a> : <a href="../../../../../../readium/navigators/media/readium-navigator-media-audio/org.readium.navigator.media.audio/-audio-engine/-error/index.html">AudioEngine.Error</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1786714150%2FClasslikes%2F1152407126" anchor-label="Playlist" id="-1786714150%2FClasslikes%2F1152407126" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-playlist/index.html"><span><span>Playlist</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1786714150%2FClasslikes%2F1152407126"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-playlist/index.html">Playlist</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>mediaMetadata<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/media3/common/MediaMetadata.html">MediaMetadata</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>duration<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-duration/index.html">Duration</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>items<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-playlist/-item/index.html">ExoPlayerEngine.Playlist.Item</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="510753091%2FClasslikes%2F1152407126" anchor-label="SettingsResolver" id="510753091%2FClasslikes%2F1152407126" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-settings-resolver/index.html"><span>Settings</span><wbr><span><span>Resolver</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="510753091%2FClasslikes%2F1152407126"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token keyword">interface </span><a href="-settings-resolver/index.html">SettingsResolver</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="-198616708%2FProperties%2F1152407126" anchor-label="playback" id="-198616708%2FProperties%2F1152407126" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="playback.html"><span><span>playback</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-198616708%2FProperties%2F1152407126"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="playback.html">playback</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/StateFlow///PointingToDeclaration/">StateFlow</span><span class="token operator">&lt;</span><a href="../../../../../../readium/navigators/media/readium-navigator-media-audio/org.readium.navigator.media.audio/-audio-engine/-playback/index.html">AudioEngine.Playback</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1910387596%2FProperties%2F1152407126" anchor-label="settings" id="-1910387596%2FProperties%2F1152407126" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="settings.html"><span><span>settings</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1910387596%2FProperties%2F1152407126"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="settings.html">settings</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/StateFlow///PointingToDeclaration/">StateFlow</span><span class="token operator">&lt;</span><a href="../-exo-player-settings/index.html">ExoPlayerSettings</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="-881244956%2FFunctions%2F1152407126" anchor-label="asPlayer" id="-881244956%2FFunctions%2F1152407126" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="as-player.html"><span>as</span><wbr><span><span>Player</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-881244956%2FFunctions%2F1152407126"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="as-player.html"><span class="token function">asPlayer</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/media3/common/Player.html">Player</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1153017739%2FFunctions%2F1152407126" anchor-label="close" id="1153017739%2FFunctions%2F1152407126" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="close.html"><span><span>close</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1153017739%2FFunctions%2F1152407126"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="close.html"><span class="token function">close</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="737524045%2FFunctions%2F1152407126" anchor-label="pause" id="737524045%2FFunctions%2F1152407126" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="pause.html"><span><span>pause</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="737524045%2FFunctions%2F1152407126"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="pause.html"><span class="token function">pause</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="445132675%2FFunctions%2F1152407126" anchor-label="play" id="445132675%2FFunctions%2F1152407126" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="play.html"><span><span>play</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="445132675%2FFunctions%2F1152407126"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="play.html"><span class="token function">play</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="212764560%2FFunctions%2F1152407126" anchor-label="skip" id="212764560%2FFunctions%2F1152407126" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="skip.html"><span><span>skip</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="212764560%2FFunctions%2F1152407126"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="skip.html"><span class="token function">skip</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">duration<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-duration/index.html">Duration</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="864562677%2FFunctions%2F1152407126" anchor-label="skipBackward" id="864562677%2FFunctions%2F1152407126" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="skip-backward.html"><span>skip</span><wbr><span><span>Backward</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="864562677%2FFunctions%2F1152407126"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="skip-backward.html"><span class="token function">skipBackward</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-564886403%2FFunctions%2F1152407126" anchor-label="skipForward" id="-564886403%2FFunctions%2F1152407126" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="skip-forward.html"><span>skip</span><wbr><span><span>Forward</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-564886403%2FFunctions%2F1152407126"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="skip-forward.html"><span class="token function">skipForward</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="339535836%2FFunctions%2F1152407126" anchor-label="skipTo" id="339535836%2FFunctions%2F1152407126" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="skip-to.html"><span>skip</span><wbr><span><span>To</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="339535836%2FFunctions%2F1152407126"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="skip-to.html"><span class="token function">skipTo</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">offset<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-duration/index.html">Duration</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="454288819%2FFunctions%2F1152407126" anchor-label="submitPreferences" id="454288819%2FFunctions%2F1152407126" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release" data-filterable-set=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="submit-preferences.html"><span>submit</span><wbr><span><span>Preferences</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="454288819%2FFunctions%2F1152407126"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:adapters:exoplayer:readium-adapter-exoplayer-audio/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="submit-preferences.html"><span class="token function">submitPreferences</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">preferences<span class="token operator">: </span><a href="../-exo-player-preferences/index.html">ExoPlayerPreferences</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

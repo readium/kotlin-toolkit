@@ -1,0 +1,419 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>Success</title>
+<link href="../../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../../../index.html" tabindex="1">
+                    Readium
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":readium:readium-shared/release">release</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":readium:readium-shared/release" data-filter=":readium:readium-shared/release">
+                                <span class="checkbox--icon"></span>
+                                release
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Readium
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="readium-shared::org.readium.r2.shared.util/Try.Success///PointingToDeclaration//-1013710462">
+  <div class="breadcrumbs"><a href="../../../index.html">readium-shared</a><span class="delimiter">/</span><a href="../../index.html">org.readium.r2.shared.util</a><span class="delimiter">/</span><a href="../index.html">Try</a><span class="delimiter">/</span><span class="current">Success</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Success</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">Success</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="index.html">S</a><span class="token punctuation">, </span><span class="token keyword">out </span><a href="index.html">F</a><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>value<span class="token operator">: </span><a href="index.html">S</a></span></span><span class="token punctuation">)</span> : <a href="../index.html">Try</a><span class="token operator">&lt;</span><a href="index.html">S</a><span class="token punctuation">, </span><a href="index.html">F</a><span class="token operator">&gt; </span></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button><button class="section-tab" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION,EXTENSION_PROPERTY,EXTENSION_FUNCTION">Members &amp; Extensions</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="tableheader">Constructors</h2>
+        <div class="table"><a data-name="2098626464%2FConstructors%2F-1013710462" anchor-label="Success" id="2098626464%2FConstructors%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-success.html"><span><span>Success</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2098626464%2FConstructors%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">value<span class="token operator">: </span><a href="index.html">S</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="-138810591%2FProperties%2F-1013710462" anchor-label="isFailure" id="-138810591%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-failure.html"><span>is</span><wbr><span><span>Failure</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-138810591%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="is-failure.html">isFailure</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1386538696%2FProperties%2F-1013710462" anchor-label="isSuccess" id="1386538696%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-success.html"><span>is</span><wbr><span><span>Success</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1386538696%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="is-success.html">isSuccess</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1037784528%2FProperties%2F-1013710462" anchor-label="value" id="1037784528%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="value.html"><span><span>value</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1037784528%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="value.html">value</a><span class="token operator">: </span><a href="index.html">S</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="-224197815%2FFunctions%2F-1013710462" anchor-label="checkSuccess" id="-224197815%2FFunctions%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../check-success.html"><span>check</span><wbr><span><span>Success</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-224197815%2FFunctions%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="../../check-success.html">S</a><span class="token punctuation">, </span><a href="../../check-success.html">F</a><span class="token operator">&gt; </span><a href="../index.html">Try</a><span class="token operator">&lt;</span><a href="../../check-success.html">S</a><span class="token punctuation">, </span><a href="../../check-success.html">F</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="../../check-success.html"><span class="token function">checkSuccess</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../check-success.html">S</a></div><div class="brief "><p class="paragraph">Returns value in case of success and throws an <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-illegal-state-exception/index.html">IllegalStateException</a> in case of failure.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1907208613%2FFunctions%2F-1013710462" anchor-label="decodeOrElse" id="-1907208613%2FFunctions%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../../org.readium.r2.shared.util.data/decode-or-else.html"><span>decode</span><wbr><span>Or</span><wbr><span><span>Else</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1907208613%2FFunctions%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">inline suspend </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="../../../org.readium.r2.shared.util.data/decode-or-else.html">R</a><span class="token operator">&gt; </span><a href="../index.html">Try</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token punctuation">, </span><a href="../../../org.readium.r2.shared.util.data/-read-error/index.html">ReadError</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="../../../org.readium.r2.shared.util.data/decode-or-else.html"><span class="token function">decodeOrElse</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">decode<span class="token operator">: </span><span class="token punctuation">(</span>value<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="../index.html">Try</a><span class="token operator">&lt;</span><a href="../../../org.readium.r2.shared.util.data/decode-or-else.html">R</a><span class="token punctuation">, </span><a href="../../../org.readium.r2.shared.util.data/-decode-error/index.html">DecodeError</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">recover<span class="token operator">: </span><span class="token punctuation">(</span><a href="../../../org.readium.r2.shared.util.data/-decode-error/-decoding/index.html">DecodeError.Decoding</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="../../../org.readium.r2.shared.util.data/decode-or-else.html">R</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../index.html">Try</a><span class="token operator">&lt;</span><a href="../../../org.readium.r2.shared.util.data/decode-or-else.html">R</a><span class="token punctuation">, </span><a href="../../../org.readium.r2.shared.util.data/-read-error/index.html">ReadError</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1575067775%2FFunctions%2F-1013710462" anchor-label="decodeOrNull" id="1575067775%2FFunctions%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../../org.readium.r2.shared.util.data/decode-or-null.html"><span>decode</span><wbr><span>Or</span><wbr><span><span>Null</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1575067775%2FFunctions%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">inline suspend </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="../../../org.readium.r2.shared.util.data/decode-or-null.html">R</a><span class="token operator">&gt; </span><a href="../index.html">Try</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token punctuation">, </span><a href="../../../org.readium.r2.shared.util.data/-read-error/index.html">ReadError</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="../../../org.readium.r2.shared.util.data/decode-or-null.html"><span class="token function">decodeOrNull</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">decode<span class="token operator">: </span><span class="token punctuation">(</span>value<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="../index.html">Try</a><span class="token operator">&lt;</span><a href="../../../org.readium.r2.shared.util.data/decode-or-null.html">R</a><span class="token punctuation">, </span><a href="../../../org.readium.r2.shared.util.data/-decode-error/index.html">DecodeError</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../org.readium.r2.shared.util.data/decode-or-null.html">R</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="86698093%2FFunctions%2F-1013710462" anchor-label="failureOrNull" id="86698093%2FFunctions%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="failure-or-null.html"><span>failure</span><wbr><span>Or</span><wbr><span><span>Null</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="86698093%2FFunctions%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="failure-or-null.html"><span class="token function">failureOrNull</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">F</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Returns the encapsulated <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-throwable/index.html">Throwable</a> exception if this instance represents failure or null if it is success.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1630248374%2FFunctions%2F-1013710462" anchor-label="flatMap" id="1630248374%2FFunctions%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../flat-map.html"><span>flat</span><wbr><span><span>Map</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1630248374%2FFunctions%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="../../flat-map.html">R</a><span class="token punctuation">, </span><a href="../../flat-map.html">S</a><span class="token punctuation">, </span><a href="../../flat-map.html">F</a><span class="token operator">&gt; </span><a href="../index.html">Try</a><span class="token operator">&lt;</span><a href="../../flat-map.html">S</a><span class="token punctuation">, </span><a href="../../flat-map.html">F</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="../../flat-map.html"><span class="token function">flatMap</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">transform<span class="token operator">: </span><span class="token punctuation">(</span>value<span class="token operator">: </span><a href="../../flat-map.html">S</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="../index.html">Try</a><span class="token operator">&lt;</span><a href="../../flat-map.html">R</a><span class="token punctuation">, </span><a href="../../flat-map.html">F</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../index.html">Try</a><span class="token operator">&lt;</span><a href="../../flat-map.html">R</a><span class="token punctuation">, </span><a href="../../flat-map.html">F</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns the encapsulated result of the given transform function applied to the encapsulated value if this instance represents success or the original encapsulated value if it is failure.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-693371742%2FFunctions%2F-1013710462" anchor-label="fold" id="-693371742%2FFunctions%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../fold.html"><span><span>fold</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-693371742%2FFunctions%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="../fold.html">R</a><span class="token operator">&gt; </span><a href="../fold.html"><span class="token function">fold</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">onSuccess<span class="token operator">: </span><span class="token punctuation">(</span>value<span class="token operator">: </span><a href="index.html">S</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="../../../../../readium/readium-shared/org.readium.r2.shared.util/-try/-success/fold.html">R</a><span class="token punctuation">, </span></span><span class="parameter ">onFailure<span class="token operator">: </span><span class="token punctuation">(</span>exception<span class="token operator">: </span><a href="index.html">F</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="../../../../../readium/readium-shared/org.readium.r2.shared.util/-try/-success/fold.html">R</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../../readium/readium-shared/org.readium.r2.shared.util/-try/-success/fold.html">R</a></div><div class="brief "><p class="paragraph">Returns the result of <a href="../fold.html">onSuccess</a> for the encapsulated value if this instance represents success or the result of <a href="../fold.html">onFailure</a> function for the encapsulated value if it is failure.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1637539796%2FFunctions%2F-1013710462" anchor-label="getOrDefault" id="-1637539796%2FFunctions%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../get-or-default.html"><span>get</span><wbr><span>Or</span><wbr><span><span>Default</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1637539796%2FFunctions%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="../../get-or-default.html">R</a><span class="token punctuation">, </span><a href="../../get-or-default.html">S</a><span class="token operator"> : </span><a href="../../get-or-default.html">R</a><span class="token punctuation">, </span><a href="../../get-or-default.html">F</a><span class="token operator">&gt; </span><a href="../index.html">Try</a><span class="token operator">&lt;</span><a href="../../get-or-default.html">S</a><span class="token punctuation">, </span><a href="../../get-or-default.html">F</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="../../get-or-default.html"><span class="token function">getOrDefault</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">defaultValue<span class="token operator">: </span><a href="../../get-or-default.html">R</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../get-or-default.html">R</a></div><div class="brief "><p class="paragraph">Returns the encapsulated value if this instance represents success or the <a href="../../get-or-default.html">defaultValue</a> if it is failure.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2146308970%2FFunctions%2F-1013710462" anchor-label="getOrElse" id="2146308970%2FFunctions%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../get-or-else.html"><span>get</span><wbr><span>Or</span><wbr><span><span>Else</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2146308970%2FFunctions%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="../../get-or-else.html">R</a><span class="token punctuation">, </span><a href="../../get-or-else.html">S</a><span class="token operator"> : </span><a href="../../get-or-else.html">R</a><span class="token punctuation">, </span><a href="../../get-or-else.html">F</a><span class="token operator">&gt; </span><a href="../index.html">Try</a><span class="token operator">&lt;</span><a href="../../get-or-else.html">S</a><span class="token punctuation">, </span><a href="../../get-or-else.html">F</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="../../get-or-else.html"><span class="token function">getOrElse</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">onFailure<span class="token operator">: </span><span class="token punctuation">(</span>exception<span class="token operator">: </span><a href="../../get-or-else.html">F</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="../../get-or-else.html">R</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../get-or-else.html">R</a></div><div class="brief "><p class="paragraph">Returns the encapsulated value if this instance represents success or the result of <a href="../../get-or-else.html">onFailure</a> function for the encapsulated value if it is failure.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2143003425%2FFunctions%2F-1013710462" anchor-label="getOrNull" id="2143003425%2FFunctions%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-or-null.html"><span>get</span><wbr><span>Or</span><wbr><span><span>Null</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2143003425%2FFunctions%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-or-null.html"><span class="token function">getOrNull</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">S</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Returns the encapsulated value if this instance represents success or null if it is failure.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="256943088%2FFunctions%2F-1013710462" anchor-label="getOrThrow" id="256943088%2FFunctions%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../get-or-throw.html"><span>get</span><wbr><span>Or</span><wbr><span><span>Throw</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="256943088%2FFunctions%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="../../get-or-throw.html">S</a><span class="token punctuation">, </span><a href="../../get-or-throw.html">F</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-throwable/index.html">Throwable</a><span class="token operator">&gt; </span><a href="../index.html">Try</a><span class="token operator">&lt;</span><a href="../../get-or-throw.html">S</a><span class="token punctuation">, </span><a href="../../get-or-throw.html">F</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="../../get-or-throw.html"><span class="token function">getOrThrow</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../get-or-throw.html">S</a></div><div class="brief "><p class="paragraph">Returns the encapsulated value if this instance represents success or throws the encapsulated Throwable exception if it is failure.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-589336360%2FFunctions%2F-1013710462" anchor-label="map" id="-589336360%2FFunctions%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../map.html"><span><span>map</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-589336360%2FFunctions%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="../map.html">R</a><span class="token operator">&gt; </span><a href="../map.html"><span class="token function">map</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">transform<span class="token operator">: </span><span class="token punctuation">(</span>value<span class="token operator">: </span><a href="index.html">S</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="../../../../../readium/readium-shared/org.readium.r2.shared.util/-try/-success/map.html">R</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../index.html">Try</a><span class="token operator">&lt;</span><a href="../../../../../readium/readium-shared/org.readium.r2.shared.util/-try/-success/map.html">R</a><span class="token punctuation">, </span><a href="index.html">F</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns the encapsulated result of the given transform function applied to the encapsulated value if this instance represents success or the original encapsulated <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-throwable/index.html">Throwable</a> exception if it is failure.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1902884828%2FFunctions%2F-1013710462" anchor-label="mapFailure" id="1902884828%2FFunctions%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../map-failure.html"><span>map</span><wbr><span><span>Failure</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1902884828%2FFunctions%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="../map-failure.html">F</a><span class="token operator">&gt; </span><a href="../map-failure.html"><span class="token function">mapFailure</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">transform<span class="token operator">: </span><span class="token punctuation">(</span>value<span class="token operator">: </span><a href="index.html">F</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="../../../../../readium/readium-shared/org.readium.r2.shared.util/-try/-success/map-failure.html">F</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../index.html">Try</a><span class="token operator">&lt;</span><a href="index.html">S</a><span class="token punctuation">, </span><a href="../../../../../readium/readium-shared/org.readium.r2.shared.util/-try/-success/map-failure.html">F</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns the encapsulated result of the given transform function applied to the encapsulated failure if this instance represents failure or the original encapsulated success value if it is a success.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2141683884%2FFunctions%2F-1013710462" anchor-label="onFailure" id="-2141683884%2FFunctions%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../on-failure.html"><span>on</span><wbr><span><span>Failure</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2141683884%2FFunctions%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><a href="../on-failure.html"><span class="token function">onFailure</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">action<span class="token operator">: </span><span class="token punctuation">(</span>exception<span class="token operator">: </span><a href="index.html">F</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../index.html">Try</a><span class="token operator">&lt;</span><a href="index.html">S</a><span class="token punctuation">, </span><a href="index.html">F</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Performs the given action on the encapsulated value if this instance represents failure. Returns the original <a href="../index.html">Try</a> unchanged.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1507472653%2FFunctions%2F-1013710462" anchor-label="onSuccess" id="1507472653%2FFunctions%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../on-success.html"><span>on</span><wbr><span><span>Success</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1507472653%2FFunctions%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><a href="../on-success.html"><span class="token function">onSuccess</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">action<span class="token operator">: </span><span class="token punctuation">(</span>value<span class="token operator">: </span><a href="index.html">S</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../index.html">Try</a><span class="token operator">&lt;</span><a href="index.html">S</a><span class="token punctuation">, </span><a href="index.html">F</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Performs the given action on the encapsulated value if this instance represents success. Returns the original <a href="../index.html">Try</a> unchanged.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="623627808%2FFunctions%2F-1013710462" anchor-label="tryRecover" id="623627808%2FFunctions%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../try-recover.html"><span>try</span><wbr><span><span>Recover</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="623627808%2FFunctions%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="../../try-recover.html">R</a><span class="token punctuation">, </span><a href="../../try-recover.html">S</a><span class="token operator"> : </span><a href="../../try-recover.html">R</a><span class="token punctuation">, </span><a href="../../try-recover.html">F</a><span class="token punctuation">, </span><a href="../../try-recover.html">T</a><span class="token operator">&gt; </span><a href="../index.html">Try</a><span class="token operator">&lt;</span><a href="../../try-recover.html">S</a><span class="token punctuation">, </span><a href="../../try-recover.html">F</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="../../try-recover.html"><span class="token function">tryRecover</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">transform<span class="token operator">: </span><span class="token punctuation">(</span>exception<span class="token operator">: </span><a href="../../try-recover.html">F</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="../index.html">Try</a><span class="token operator">&lt;</span><a href="../../try-recover.html">R</a><span class="token punctuation">, </span><a href="../../try-recover.html">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../index.html">Try</a><span class="token operator">&lt;</span><a href="../../try-recover.html">R</a><span class="token punctuation">, </span><a href="../../try-recover.html">T</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns the encapsulated result of the given transform function applied to the encapsulated value if this instance represents failure or the original encapsulated value if it is success.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

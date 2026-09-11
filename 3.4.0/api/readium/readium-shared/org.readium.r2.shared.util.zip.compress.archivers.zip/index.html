@@ -1,0 +1,620 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>org.readium.r2.shared.util.zip.compress.archivers.zip</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
+                    Readium
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":readium:readium-shared/release">release</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":readium:readium-shared/release" data-filter=":readium:readium-shared/release">
+                                <span class="checkbox--icon"></span>
+                                release
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Readium
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="package" id="content" pageids="readium-shared::org.readium.r2.shared.util.zip.compress.archivers.zip////PointingToDeclaration//-1013710462">
+  <div class="breadcrumbs"><a href="../index.html">readium-shared</a><span class="delimiter">/</span><span class="current">org.readium.r2.shared.util.zip.compress.archivers.zip</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="-740289120%2FClasslikes%2F-1013710462" anchor-label="AbstractUnicodeExtraField" id="-740289120%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-abstract-unicode-extra-field/index.html"><span>Abstract</span><wbr><span>Unicode</span><wbr><span>Extra</span><wbr><span><span>Field</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-740289120%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">class </span><a href="-abstract-unicode-extra-field/index.html">AbstractUnicodeExtraField</a> : <a href="-zip-extra-field/index.html">ZipExtraField</a></div><div class="brief ">A common base class for Unicode extra information extra fields.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1222471630%2FClasslikes%2F-1013710462" anchor-label="CharsetAccessor" id="-1222471630%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-charset-accessor/index.html"><span>Charset</span><wbr><span><span>Accessor</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1222471630%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-charset-accessor/index.html">CharsetAccessor</a></div><div class="brief ">An interface added to allow access to the character set associated with an <a href="../../../readium/readium-shared/org.readium.r2.shared.util.zip.compress.archivers.zip/-nio-zip-encoding/index.html">NioZipEncoding</a>, without requiring a new method to be added to <a href="-zip-encoding/index.html">ZipEncoding</a>.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-948776563%2FClasslikes%2F-1013710462" anchor-label="ExtraFieldParsingBehavior" id="-948776563%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-extra-field-parsing-behavior/index.html"><span>Extra</span><wbr><span>Field</span><wbr><span>Parsing</span><wbr><span><span>Behavior</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-948776563%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-extra-field-parsing-behavior/index.html">ExtraFieldParsingBehavior</a> : <a href="-unparseable-extra-field-behavior/index.html">UnparseableExtraFieldBehavior</a></div><div class="brief ">Controls details of parsing zip extra fields.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1967955362%2FClasslikes%2F-1013710462" anchor-label="ExtraFieldUtils" id="-1967955362%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-extra-field-utils/index.html"><span>Extra</span><wbr><span>Field</span><wbr><span><span>Utils</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1967955362%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-extra-field-utils/index.html">ExtraFieldUtils</a></div><div class="brief ">ZipExtraField related methods</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1957251406%2FClasslikes%2F-1013710462" anchor-label="GeneralPurposeBit" id="1957251406%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-general-purpose-bit/index.html"><span>General</span><wbr><span>Purpose</span><wbr><span><span>Bit</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1957251406%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="-general-purpose-bit/index.html">GeneralPurposeBit</a> : <a href="https://developer.android.com/reference/kotlin/java/lang/Cloneable.html">Cloneable</a></div><div class="brief ">Parser/encoder for the "general purpose bit" field in ZIP's local file and central directory headers.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1724771002%2FClasslikes%2F-1013710462" anchor-label="ResourceAlignmentExtraField" id="-1724771002%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-resource-alignment-extra-field/index.html"><span>Resource</span><wbr><span>Alignment</span><wbr><span>Extra</span><wbr><span><span>Field</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1724771002%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-resource-alignment-extra-field/index.html">ResourceAlignmentExtraField</a> : <a href="-zip-extra-field/index.html">ZipExtraField</a></div><div class="brief ">An extra field who's sole purpose is to align and pad the local file header so that the entry's data starts at a certain position.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-627399644%2FClasslikes%2F-1013710462" anchor-label="ScatterStatistics" id="-627399644%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-scatter-statistics/index.html"><span>Scatter</span><wbr><span><span>Statistics</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-627399644%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-scatter-statistics/index.html">ScatterStatistics</a></div><div class="brief ">Provides information about a scatter compression run.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2022056231%2FClasslikes%2F-1013710462" anchor-label="ScatterZipOutputStream" id="-2022056231%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-scatter-zip-output-stream/index.html"><span>Scatter</span><wbr><span>Zip</span><wbr><span>Output</span><wbr><span><span>Stream</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2022056231%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-scatter-zip-output-stream/index.html">ScatterZipOutputStream</a> : <a href="https://developer.android.com/reference/kotlin/java/io/Closeable.html">Closeable</a></div><div class="brief ">A zip output stream that is optimized for multi-threaded scatter/gather construction of zip files.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-322926184%2FClasslikes%2F-1013710462" anchor-label="StreamCompressor" id="-322926184%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-stream-compressor/index.html"><span>Stream</span><wbr><span><span>Compressor</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-322926184%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">class </span><a href="-stream-compressor/index.html">StreamCompressor</a> : <a href="https://developer.android.com/reference/kotlin/java/io/Closeable.html">Closeable</a></div><div class="brief ">Encapsulates a <a href="https://developer.android.com/reference/kotlin/java/util/zip/Deflater.html">Deflater</a> and crc calculator, handling multiple types of output streams.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1112223409%2FClasslikes%2F-1013710462" anchor-label="UnicodeCommentExtraField" id="1112223409%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-unicode-comment-extra-field/index.html"><span>Unicode</span><wbr><span>Comment</span><wbr><span>Extra</span><wbr><span><span>Field</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1112223409%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-unicode-comment-extra-field/index.html">UnicodeCommentExtraField</a> : <a href="-abstract-unicode-extra-field/index.html">AbstractUnicodeExtraField</a></div><div class="brief ">Info-ZIP Unicode Comment Extra Field (0x6375): Stores the UTF-8 version of the file comment as stored in the central directory header.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1423475207%2FClasslikes%2F-1013710462" anchor-label="UnicodePathExtraField" id="-1423475207%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-unicode-path-extra-field/index.html"><span>Unicode</span><wbr><span>Path</span><wbr><span>Extra</span><wbr><span><span>Field</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1423475207%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-unicode-path-extra-field/index.html">UnicodePathExtraField</a> : <a href="-abstract-unicode-extra-field/index.html">AbstractUnicodeExtraField</a></div><div class="brief ">Info-ZIP Unicode Path Extra Field (0x7075): Stores the UTF-8 version of the file name field as stored in the local header and central directory header.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-447741471%2FClasslikes%2F-1013710462" anchor-label="UnixStat" id="-447741471%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-unix-stat/index.html"><span>Unix</span><wbr><span><span>Stat</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-447741471%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-unix-stat/index.html">UnixStat</a></div><div class="brief ">Constants from stat.h on Unix systems.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1152016107%2FClasslikes%2F-1013710462" anchor-label="UnparseableExtraFieldBehavior" id="-1152016107%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-unparseable-extra-field-behavior/index.html"><span>Unparseable</span><wbr><span>Extra</span><wbr><span>Field</span><wbr><span><span>Behavior</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1152016107%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-unparseable-extra-field-behavior/index.html">UnparseableExtraFieldBehavior</a></div><div class="brief ">Handles extra field data that doesn't follow the recommended pattern for extra fields with a two-byte key and a two-byte length.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1786150467%2FClasslikes%2F-1013710462" anchor-label="UnparseableExtraFieldData" id="-1786150467%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-unparseable-extra-field-data/index.html"><span>Unparseable</span><wbr><span>Extra</span><wbr><span>Field</span><wbr><span><span>Data</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1786150467%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="-unparseable-extra-field-data/index.html">UnparseableExtraFieldData</a> : <a href="-zip-extra-field/index.html">ZipExtraField</a></div><div class="brief ">Wrapper for extra field data that doesn't conform to the recommended format of header-tag + size + data.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1302318692%2FClasslikes%2F-1013710462" anchor-label="UnrecognizedExtraField" id="1302318692%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-unrecognized-extra-field/index.html"><span>Unrecognized</span><wbr><span>Extra</span><wbr><span><span>Field</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1302318692%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-unrecognized-extra-field/index.html">UnrecognizedExtraField</a> : <a href="-zip-extra-field/index.html">ZipExtraField</a></div><div class="brief ">Simple placeholder for all those extra fields we don't want to deal with.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1918452280%2FClasslikes%2F-1013710462" anchor-label="UnsupportedZipFeatureException" id="1918452280%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-unsupported-zip-feature-exception/index.html"><span>Unsupported</span><wbr><span>Zip</span><wbr><span>Feature</span><wbr><span><span>Exception</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1918452280%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-unsupported-zip-feature-exception/index.html">UnsupportedZipFeatureException</a> : <a href="https://developer.android.com/reference/kotlin/java/util/zip/ZipException.html">ZipException</a></div><div class="brief ">Exception thrown when attempting to read or write data for a zip entry that uses ZIP features not supported by this library.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1995683553%2FClasslikes%2F-1013710462" anchor-label="Zip64ExtendedInformationExtraField" id="-1995683553%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-zip64-extended-information-extra-field/index.html"><span>Zip64Extended</span><wbr><span>Information</span><wbr><span>Extra</span><wbr><span><span>Field</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1995683553%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-zip64-extended-information-extra-field/index.html">Zip64ExtendedInformationExtraField</a> : <a href="-zip-extra-field/index.html">ZipExtraField</a></div><div class="brief ">Holds size and other extended information for entries that use Zip64 features.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-302582301%2FClasslikes%2F-1013710462" anchor-label="Zip64Mode" id="-302582301%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-zip64-mode/index.html"><span><span>Zip64Mode</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-302582301%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">enum </span><a href="-zip64-mode/index.html">Zip64Mode</a></div><div class="brief ">The different modes <a href="-zip-archive-output-stream/index.html">ZipArchiveOutputStream</a> can operate in.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1585985260%2FClasslikes%2F-1013710462" anchor-label="Zip64RequiredException" id="1585985260%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-zip64-required-exception/index.html"><span>Zip64Required</span><wbr><span><span>Exception</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1585985260%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-zip64-required-exception/index.html">Zip64RequiredException</a> : <a href="https://developer.android.com/reference/kotlin/java/util/zip/ZipException.html">ZipException</a></div><div class="brief ">Exception thrown when attempting to write data that requires Zip64 support to an archive and <a href="-zip-archive-output-stream/set-use-zip64.html">UseZip64</a> has been set to <a href="-zip64-mode/-never/index.html">Never</a>.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-641059052%2FClasslikes%2F-1013710462" anchor-label="ZipArchiveEntry" id="-641059052%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-zip-archive-entry/index.html"><span>Zip</span><wbr><span>Archive</span><wbr><span><span>Entry</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-641059052%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-zip-archive-entry/index.html">ZipArchiveEntry</a> : <a href="https://developer.android.com/reference/kotlin/java/util/zip/ZipEntry.html">ZipEntry</a>, <a href="../org.readium.r2.shared.util.zip.compress.archivers/-archive-entry/index.html">ArchiveEntry</a>, <a href="../org.readium.r2.shared.util.zip.compress.archivers/-entry-stream-offsets/index.html">EntryStreamOffsets</a></div><div class="brief ">Extension that adds better handling of extra fields and provides access to the internal and external file attributes.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="308355831%2FClasslikes%2F-1013710462" anchor-label="ZipArchiveEntryPredicate" id="308355831%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-zip-archive-entry-predicate/index.html"><span>Zip</span><wbr><span>Archive</span><wbr><span>Entry</span><wbr><span><span>Predicate</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="308355831%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-zip-archive-entry-predicate/index.html">ZipArchiveEntryPredicate</a></div><div class="brief ">A predicate to test if a #ZipArchiveEntry matches a criteria.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1971584929%2FClasslikes%2F-1013710462" anchor-label="ZipArchiveEntryRequest" id="-1971584929%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-zip-archive-entry-request/index.html"><span>Zip</span><wbr><span>Archive</span><wbr><span>Entry</span><wbr><span><span>Request</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1971584929%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-zip-archive-entry-request/index.html">ZipArchiveEntryRequest</a></div><div class="brief ">A Thread-safe representation of a ZipArchiveEntry that is used to add entries to parallel archives.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="446865083%2FClasslikes%2F-1013710462" anchor-label="ZipArchiveOutputStream" id="446865083%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-zip-archive-output-stream/index.html"><span>Zip</span><wbr><span>Archive</span><wbr><span>Output</span><wbr><span><span>Stream</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="446865083%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-zip-archive-output-stream/index.html">ZipArchiveOutputStream</a> : <a href="../org.readium.r2.shared.util.zip.compress.archivers/-archive-output-stream/index.html">ArchiveOutputStream</a></div><div class="brief ">Reimplementation of <a href="https://developer.android.com/reference/kotlin/java/util/zip/ZipOutputStream.html">java.util.zip.ZipOutputStream</a> that does handle the extended functionality of this package, especially internal/external file attributes and extra fields with different layouts for local file data and central directory entries.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-207508675%2FClasslikes%2F-1013710462" anchor-label="ZipEightByteInteger" id="-207508675%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-zip-eight-byte-integer/index.html"><span>Zip</span><wbr><span>Eight</span><wbr><span>Byte</span><wbr><span><span>Integer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-207508675%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="-zip-eight-byte-integer/index.html">ZipEightByteInteger</a> : <a href="https://developer.android.com/reference/kotlin/java/io/Serializable.html">Serializable</a></div><div class="brief ">Utility class that represents an eight byte integer with conversion rules for the little endian byte order of ZIP files.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1181435249%2FClasslikes%2F-1013710462" anchor-label="ZipEncoding" id="1181435249%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-zip-encoding/index.html"><span>Zip</span><wbr><span><span>Encoding</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1181435249%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-zip-encoding/index.html">ZipEncoding</a></div><div class="brief ">An interface for encoders that do a pretty encoding of ZIP file names.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1875713379%2FClasslikes%2F-1013710462" anchor-label="ZipEncodingHelper" id="1875713379%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-zip-encoding-helper/index.html"><span>Zip</span><wbr><span>Encoding</span><wbr><span><span>Helper</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1875713379%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">class </span><a href="-zip-encoding-helper/index.html">ZipEncodingHelper</a></div><div class="brief ">Static helper functions for robustly encoding file names in zip files.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1637781274%2FClasslikes%2F-1013710462" anchor-label="ZipExtraField" id="1637781274%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-zip-extra-field/index.html"><span>Zip</span><wbr><span>Extra</span><wbr><span><span>Field</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1637781274%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-zip-extra-field/index.html">ZipExtraField</a></div><div class="brief ">General format of extra field data.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-960733464%2FClasslikes%2F-1013710462" anchor-label="ZipFile" id="-960733464%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-zip-file/index.html"><span>Zip</span><wbr><span><span>File</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-960733464%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-zip-file/index.html">ZipFile</a> : <a href="https://developer.android.com/reference/kotlin/java/io/Closeable.html">Closeable</a></div><div class="brief ">Replacement for <code class="lang-java">java.util.ZipFile</code>.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-640242200%2FClasslikes%2F-1013710462" anchor-label="ZipLong" id="-640242200%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-zip-long/index.html"><span>Zip</span><wbr><span><span>Long</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-640242200%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="-zip-long/index.html">ZipLong</a> : <a href="https://developer.android.com/reference/kotlin/java/lang/Cloneable.html">Cloneable</a>, <a href="https://developer.android.com/reference/kotlin/java/io/Serializable.html">Serializable</a></div><div class="brief ">Utility class that represents a four byte integer with conversion rules for the little endian byte order of ZIP files.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="436522595%2FClasslikes%2F-1013710462" anchor-label="ZipMethod" id="436522595%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-zip-method/index.html"><span>Zip</span><wbr><span><span>Method</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="436522595%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">enum </span><a href="-zip-method/index.html">ZipMethod</a></div><div class="brief ">List of known compression methods Many of these methods are currently not supported by commons compress</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1462185758%2FClasslikes%2F-1013710462" anchor-label="ZipShort" id="-1462185758%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-zip-short/index.html"><span>Zip</span><wbr><span><span>Short</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1462185758%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="-zip-short/index.html">ZipShort</a> : <a href="https://developer.android.com/reference/kotlin/java/lang/Cloneable.html">Cloneable</a>, <a href="https://developer.android.com/reference/kotlin/java/io/Serializable.html">Serializable</a></div><div class="brief ">Utility class that represents a two byte integer with conversion rules for the little endian byte order of ZIP files.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="9356439%2FClasslikes%2F-1013710462" anchor-label="ZipSplitReadOnlySeekableByteChannel" id="9356439%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-zip-split-read-only-seekable-byte-channel/index.html"><span>Zip</span><wbr><span>Split</span><wbr><span>Read</span><wbr><span>Only</span><wbr><span>Seekable</span><wbr><span>Byte</span><wbr><span><span>Channel</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="9356439%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-zip-split-read-only-seekable-byte-channel/index.html">ZipSplitReadOnlySeekableByteChannel</a> : <a href="../org.readium.r2.shared.util.zip.compress.utils/-multi-read-only-seekable-byte-channel/index.html">MultiReadOnlySeekableByteChannel</a></div><div class="brief "><a href="../org.readium.r2.shared.util.zip.compress.utils/-multi-read-only-seekable-byte-channel/index.html">MultiReadOnlySeekableByteChannel</a> that knows what a split ZIP archive should look like.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-328980702%2FClasslikes%2F-1013710462" anchor-label="ZipUtil" id="-328980702%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-zip-util/index.html"><span>Zip</span><wbr><span><span>Util</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-328980702%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">class </span><a href="-zip-util/index.html">ZipUtil</a></div><div class="brief ">Utility class for handling DOS and Java time conversions.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

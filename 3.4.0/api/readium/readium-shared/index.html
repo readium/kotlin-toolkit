@@ -1,0 +1,820 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>readium-shared</title>
+<link href="../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../index.html" tabindex="1">
+                    Readium
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":readium:readium-shared/release">release</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":readium:readium-shared/release" data-filter=":readium:readium-shared/release">
+                                <span class="checkbox--icon"></span>
+                                release
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Readium
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" id="content" pageids="readium-shared::////PointingToDeclaration//-1013710462">
+  <div class="breadcrumbs"></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>readium-shared</span></span></h1>
+  </div>
+  <h2 class="">Packages</h2>
+  <div class="table"><a data-name="-529003992%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared" id="-529003992%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared/index.html">org.readium.r2.shared</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-529003992%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1285670008%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.accessibility" id="-1285670008%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.accessibility/index.html">org.readium.r2.shared.accessibility</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1285670008%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="2106620958%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.extensions" id="2106620958%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.extensions/index.html">org.readium.r2.shared.extensions</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2106620958%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="491964730%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.opds" id="491964730%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.opds/index.html">org.readium.r2.shared.opds</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="491964730%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1962510106%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.publication" id="-1962510106%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.publication/index.html">org.readium.r2.shared.publication</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1962510106%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="648753487%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.publication.encryption" id="648753487%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.publication.encryption/index.html">org.readium.r2.shared.publication.encryption</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="648753487%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-40727164%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.publication.epub" id="-40727164%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.publication.epub/index.html">org.readium.r2.shared.publication.epub</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-40727164%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="1534758647%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.publication.html" id="1534758647%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.publication.html/index.html">org.readium.r2.shared.publication.html</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1534758647%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-724442820%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.publication.opds" id="-724442820%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.publication.opds/index.html">org.readium.r2.shared.publication.opds</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-724442820%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1111474266%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.publication.presentation" id="-1111474266%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.publication.presentation/index.html">org.readium.r2.shared.publication.presentation</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1111474266%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-430236379%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.publication.protection" id="-430236379%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.publication.protection/index.html">org.readium.r2.shared.publication.protection</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-430236379%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="672409834%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.publication.services" id="672409834%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.publication.services/index.html">org.readium.r2.shared.publication.services</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="672409834%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="302775733%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.publication.services.content" id="302775733%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.publication.services.content/index.html">org.readium.r2.shared.publication.services.content</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="302775733%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="1131748492%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.publication.services.content.iterators" id="1131748492%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.publication.services.content.iterators/index.html">org.readium.r2.shared.publication.services.content.iterators</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1131748492%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-880714832%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.publication.services.search" id="-880714832%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.publication.services.search/index.html">org.readium.r2.shared.publication.services.search</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-880714832%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-377745268%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.util" id="-377745268%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.util/index.html">org.readium.r2.shared.util</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-377745268%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1900308896%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.util.archive" id="-1900308896%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.util.archive/index.html">org.readium.r2.shared.util.archive</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1900308896%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-533609970%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.util.asset" id="-533609970%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.util.asset/index.html">org.readium.r2.shared.util.asset</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-533609970%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-543943648%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.util.cache" id="-543943648%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.util.cache/index.html">org.readium.r2.shared.util.cache</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-543943648%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="267068247%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.util.content" id="267068247%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.util.content/index.html">org.readium.r2.shared.util.content</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="267068247%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1865767344%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.util.data" id="-1865767344%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.util.data/index.html">org.readium.r2.shared.util.data</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1865767344%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="996092322%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.util.file" id="996092322%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.util.file/index.html">org.readium.r2.shared.util.file</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="996092322%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-705874083%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.util.format" id="-705874083%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.util.format/index.html">org.readium.r2.shared.util.format</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-705874083%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="2835886%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.util.http" id="2835886%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.util.http/index.html">org.readium.r2.shared.util.http</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2835886%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="652763596%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.util.io" id="652763596%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.util.io/index.html">org.readium.r2.shared.util.io</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="652763596%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1652537667%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.util.logging" id="-1652537667%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.util.logging/index.html">org.readium.r2.shared.util.logging</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1652537667%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="127092924%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.util.mediatype" id="127092924%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.util.mediatype/index.html">org.readium.r2.shared.util.mediatype</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="127092924%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="1278380176%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.util.pdf" id="1278380176%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.util.pdf/index.html">org.readium.r2.shared.util.pdf</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1278380176%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="520111028%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.util.resource" id="520111028%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.util.resource/index.html">org.readium.r2.shared.util.resource</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="520111028%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="1312665215%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.util.resource.content" id="1312665215%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.util.resource.content/index.html">org.readium.r2.shared.util.resource.content</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1312665215%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="1287425397%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.util.tokenizer" id="1287425397%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.util.tokenizer/index.html">org.readium.r2.shared.util.tokenizer</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1287425397%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-992903731%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.util.units" id="-992903731%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.util.units/index.html">org.readium.r2.shared.util.units</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-992903731%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="1710314357%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.util.xml" id="1710314357%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.util.xml/index.html">org.readium.r2.shared.util.xml</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1710314357%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-628014593%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.util.zip" id="-628014593%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.util.zip/index.html">org.readium.r2.shared.util.zip</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-628014593%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1816467446%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.util.zip.compress.archivers" id="-1816467446%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.util.zip.compress.archivers/index.html">org.readium.r2.shared.util.zip.compress.archivers</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1816467446%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="310127229%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.util.zip.compress.archivers.zip" id="310127229%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.util.zip.compress.archivers.zip/index.html">org.readium.r2.shared.util.zip.compress.archivers.zip</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="310127229%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-408197852%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.util.zip.compress.parallel" id="-408197852%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.util.zip.compress.parallel/index.html">org.readium.r2.shared.util.zip.compress.parallel</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-408197852%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="1911795512%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.util.zip.compress.utils" id="1911795512%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.util.zip.compress.utils/index.html">org.readium.r2.shared.util.zip.compress.utils</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1911795512%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-341416078%2FPackages%2F-1013710462" anchor-label="org.readium.r2.shared.util.zip.jvm" id="-341416078%2FPackages%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.readium.r2.shared.util.zip.jvm/index.html">org.readium.r2.shared.util.zip.jvm</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-341416078%2FPackages%2F-1013710462"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">release</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

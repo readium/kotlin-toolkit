@@ -1,0 +1,464 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>TtsNavigator</title>
+<link href="../../../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../../../../index.html" tabindex="1">
+                    Readium
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":readium:navigators:media:readium-navigator-media-tts/release">release</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":readium:navigators:media:readium-navigator-media-tts/release" data-filter=":readium:navigators:media:readium-navigator-media-tts/release">
+                                <span class="checkbox--icon"></span>
+                                release
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Readium
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="readium-navigator-media-tts::org.readium.navigator.media.tts/TtsNavigator///PointingToDeclaration//543916811">
+  <div class="breadcrumbs"><a href="../../index.html">readium-navigator-media-tts</a><span class="delimiter">/</span><a href="../index.html">org.readium.navigator.media.tts</a><span class="delimiter">/</span><span class="current">TtsNavigator</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Tts</span><wbr><span><span>Navigator</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:media:readium-navigator-media-tts/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">TtsNavigator</a><span class="token operator">&lt;</span><a href="index.html">S</a><span class="token operator"> : </span><a href="../-tts-engine/-settings/index.html">TtsEngine.Settings</a><span class="token punctuation">, </span><a href="index.html">P</a><span class="token operator"> : </span><a href="../-tts-engine/-preferences/index.html">TtsEngine.Preferences</a><span class="token operator">&lt;</span><a href="index.html">P</a><span class="token operator">&gt;</span><span class="token punctuation">, </span><a href="index.html">E</a><span class="token operator"> : </span><a href="../-tts-engine/-error/index.html">TtsEngine.Error</a><span class="token punctuation">, </span><a href="index.html">V</a><span class="token operator"> : </span><a href="../-tts-engine/-voice/index.html">TtsEngine.Voice</a><span class="token operator">&gt;</span> : <a href="../../../../../../readium/navigators/media/readium-navigator-media-common/org.readium.navigator.media.common/-media-navigator/index.html">MediaNavigator</a><span class="token operator">&lt;</span><a href="-location/index.html">TtsNavigator.Location</a><span class="token punctuation">, </span><a href="-playback/index.html">TtsNavigator.Playback</a><span class="token punctuation">, </span><a href="-reading-order/index.html">TtsNavigator.ReadingOrder</a><span class="token operator">&gt; </span>, <a href="../../../../../../readium/navigators/media/readium-navigator-media-common/org.readium.navigator.media.common/-text-aware-media-navigator/index.html">TextAwareMediaNavigator</a><span class="token operator">&lt;</span><a href="-location/index.html">TtsNavigator.Location</a><span class="token punctuation">, </span><a href="-playback/index.html">TtsNavigator.Playback</a><span class="token punctuation">, </span><a href="-reading-order/index.html">TtsNavigator.ReadingOrder</a><span class="token operator">&gt; </span>, <a href="../../../../../../readium/navigators/media/readium-navigator-media-common/org.readium.navigator.media.common/-media3-adapter/index.html">Media3Adapter</a>, <a href="../../../../../../readium/readium-navigator/org.readium.r2.navigator.preferences/-configurable/index.html">Configurable</a><span class="token operator">&lt;</span><a href="index.html">S</a><span class="token punctuation">, </span><a href="index.html">P</a><span class="token operator">&gt; </span></div><p class="paragraph">A navigator to read aloud a <a href="../../../../../../readium/readium-shared/org.readium.r2.shared.publication/-publication/index.html">Publication</a> with a TTS engine.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="985444009%2FClasslikes%2F543916811" anchor-label="Error" id="985444009%2FClasslikes%2F543916811" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:media:readium-navigator-media-tts/release" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-error/index.html"><span><span>Error</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="985444009%2FClasslikes%2F543916811"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:media:readium-navigator-media-tts/release"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="-error/index.html">Error</a> : <a href="../../../../../../readium/readium-shared/org.readium.r2.shared.util/-error/index.html">Error</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1477493373%2FClasslikes%2F543916811" anchor-label="Listener" id="1477493373%2FClasslikes%2F543916811" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:media:readium-navigator-media-tts/release" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-listener/index.html"><span><span>Listener</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1477493373%2FClasslikes%2F543916811"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:media:readium-navigator-media-tts/release"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-listener/index.html">Listener</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="456366748%2FClasslikes%2F543916811" anchor-label="Location" id="456366748%2FClasslikes%2F543916811" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:media:readium-navigator-media-tts/release" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-location/index.html"><span><span>Location</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="456366748%2FClasslikes%2F543916811"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:media:readium-navigator-media-tts/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-location/index.html">Location</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>href<span class="token operator">: </span><a href="../../../../../../readium/readium-shared/org.readium.r2.shared.util/-url/index.html">Url</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>utterance<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>range<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.ranges/-int-range/index.html">IntRange</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>textBefore<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>textAfter<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>utteranceLocator<span class="token operator">: </span><a href="../../../../../../readium/readium-shared/org.readium.r2.shared.publication/-locator/index.html">Locator</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>tokenLocator<span class="token operator">: </span><a href="../../../../../../readium/readium-shared/org.readium.r2.shared.publication/-locator/index.html">Locator</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span> : <a href="../../../../../../readium/navigators/media/readium-navigator-media-common/org.readium.navigator.media.common/-text-aware-media-navigator/-location/index.html">TextAwareMediaNavigator.Location</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1021395702%2FClasslikes%2F543916811" anchor-label="Playback" id="1021395702%2FClasslikes%2F543916811" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:media:readium-navigator-media-tts/release" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-playback/index.html"><span><span>Playback</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1021395702%2FClasslikes%2F543916811"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:media:readium-navigator-media-tts/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-playback/index.html">Playback</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>state<span class="token operator">: </span><a href="../../../../../../readium/navigators/media/readium-navigator-media-common/org.readium.navigator.media.common/-media-navigator/-state/index.html">MediaNavigator.State</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>playWhenReady<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>index<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>utterance<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>range<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.ranges/-int-range/index.html">IntRange</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span> : <a href="../../../../../../readium/navigators/media/readium-navigator-media-common/org.readium.navigator.media.common/-text-aware-media-navigator/-playback/index.html">TextAwareMediaNavigator.Playback</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1400135375%2FClasslikes%2F543916811" anchor-label="ReadingOrder" id="1400135375%2FClasslikes%2F543916811" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:media:readium-navigator-media-tts/release" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-reading-order/index.html"><span>Reading</span><wbr><span><span>Order</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1400135375%2FClasslikes%2F543916811"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:media:readium-navigator-media-tts/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-reading-order/index.html">ReadingOrder</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>items<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-reading-order/-item/index.html">TtsNavigator.ReadingOrder.Item</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span> : <a href="../../../../../../readium/navigators/media/readium-navigator-media-common/org.readium.navigator.media.common/-text-aware-media-navigator/-reading-order/index.html">TextAwareMediaNavigator.ReadingOrder</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1619494848%2FClasslikes%2F543916811" anchor-label="State" id="-1619494848%2FClasslikes%2F543916811" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:media:readium-navigator-media-tts/release" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-state/index.html"><span><span>State</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1619494848%2FClasslikes%2F543916811"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:media:readium-navigator-media-tts/release"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">interface </span><a href="-state/index.html">State</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="-1847734017%2FProperties%2F543916811" anchor-label="currentLocator" id="-1847734017%2FProperties%2F543916811" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:media:readium-navigator-media-tts/release" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="current-locator.html"><span>current</span><wbr><span><span>Locator</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1847734017%2FProperties%2F543916811"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:media:readium-navigator-media-tts/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="current-locator.html">currentLocator</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/StateFlow///PointingToDeclaration/">StateFlow</span><span class="token operator">&lt;</span><a href="../../../../../../readium/readium-shared/org.readium.r2.shared.publication/-locator/index.html">Locator</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1127754855%2FProperties%2F543916811" anchor-label="location" id="1127754855%2FProperties%2F543916811" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:media:readium-navigator-media-tts/release" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="location.html"><span><span>location</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1127754855%2FProperties%2F543916811"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:media:readium-navigator-media-tts/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="location.html">location</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/StateFlow///PointingToDeclaration/">StateFlow</span><span class="token operator">&lt;</span><a href="-location/index.html">TtsNavigator.Location</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1692783809%2FProperties%2F543916811" anchor-label="playback" id="1692783809%2FProperties%2F543916811" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:media:readium-navigator-media-tts/release" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="playback.html"><span><span>playback</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1692783809%2FProperties%2F543916811"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:media:readium-navigator-media-tts/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="playback.html">playback</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/StateFlow///PointingToDeclaration/">StateFlow</span><span class="token operator">&lt;</span><a href="-playback/index.html">TtsNavigator.Playback</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1504622874%2FProperties%2F543916811" anchor-label="readingOrder" id="1504622874%2FProperties%2F543916811" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:media:readium-navigator-media-tts/release" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="reading-order.html"><span>reading</span><wbr><span><span>Order</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1504622874%2FProperties%2F543916811"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:media:readium-navigator-media-tts/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="reading-order.html">readingOrder</a><span class="token operator">: </span><a href="-reading-order/index.html">TtsNavigator.ReadingOrder</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-18987079%2FProperties%2F543916811" anchor-label="settings" id="-18987079%2FProperties%2F543916811" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:media:readium-navigator-media-tts/release" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="settings.html"><span><span>settings</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-18987079%2FProperties%2F543916811"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:media:readium-navigator-media-tts/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="settings.html">settings</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/StateFlow///PointingToDeclaration/">StateFlow</span><span class="token operator">&lt;</span><a href="index.html">S</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="670042075%2FProperties%2F543916811" anchor-label="voices" id="670042075%2FProperties%2F543916811" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:media:readium-navigator-media-tts/release" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="voices.html"><span><span>voices</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="670042075%2FProperties%2F543916811"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:media:readium-navigator-media-tts/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="voices.html">voices</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="index.html">V</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="928693146%2FFunctions%2F543916811" anchor-label="asMedia3Player" id="928693146%2FFunctions%2F543916811" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:media:readium-navigator-media-tts/release" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="as-media3-player.html"><span>as</span><wbr><span><span>Media3Player</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="928693146%2FFunctions%2F543916811"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:media:readium-navigator-media-tts/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="as-media3-player.html"><span class="token function">asMedia3Player</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/media3/common/Player.html">Player</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1766360474%2FFunctions%2F543916811" anchor-label="close" id="-1766360474%2FFunctions%2F543916811" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:media:readium-navigator-media-tts/release" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="close.html"><span><span>close</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1766360474%2FFunctions%2F543916811"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:media:readium-navigator-media-tts/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="close.html"><span class="token function">close</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1431672540%2FFunctions%2F543916811" anchor-label="go" id="-1431672540%2FFunctions%2F543916811" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:media:readium-navigator-media-tts/release" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="go.html"><span><span>go</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1431672540%2FFunctions%2F543916811"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:media:readium-navigator-media-tts/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="go.html"><span class="token function">go</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">locator<span class="token operator">: </span><a href="../../../../../../readium/readium-shared/org.readium.r2.shared.publication/-locator/index.html">Locator</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="go.html"><span class="token function">go</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">link<span class="token operator">: </span><a href="../../../../../../readium/readium-shared/org.readium.r2.shared.publication/-link/index.html">Link</a><span class="token punctuation">, </span></span><span class="parameter ">animated<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="go.html"><span class="token function">go</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">locator<span class="token operator">: </span><a href="../../../../../../readium/readium-shared/org.readium.r2.shared.publication/-locator/index.html">Locator</a><span class="token punctuation">, </span></span><span class="parameter ">animated<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="368309432%2FFunctions%2F543916811" anchor-label="hasNextUtterance" id="368309432%2FFunctions%2F543916811" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:media:readium-navigator-media-tts/release" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="has-next-utterance.html"><span>has</span><wbr><span>Next</span><wbr><span><span>Utterance</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="368309432%2FFunctions%2F543916811"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:media:readium-navigator-media-tts/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="has-next-utterance.html"><span class="token function">hasNextUtterance</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1956053188%2FFunctions%2F543916811" anchor-label="hasPreviousUtterance" id="-1956053188%2FFunctions%2F543916811" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:media:readium-navigator-media-tts/release" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="has-previous-utterance.html"><span>has</span><wbr><span>Previous</span><wbr><span><span>Utterance</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1956053188%2FFunctions%2F543916811"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:media:readium-navigator-media-tts/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="has-previous-utterance.html"><span class="token function">hasPreviousUtterance</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2113113128%2FFunctions%2F543916811" anchor-label="pause" id="2113113128%2FFunctions%2F543916811" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:media:readium-navigator-media-tts/release" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="pause.html"><span><span>pause</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2113113128%2FFunctions%2F543916811"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:media:readium-navigator-media-tts/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="pause.html"><span class="token function">pause</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="73864520%2FFunctions%2F543916811" anchor-label="play" id="73864520%2FFunctions%2F543916811" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:media:readium-navigator-media-tts/release" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="play.html"><span><span>play</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="73864520%2FFunctions%2F543916811"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:media:readium-navigator-media-tts/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="play.html"><span class="token function">play</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-786109798%2FFunctions%2F543916811" anchor-label="skipToNextUtterance" id="-786109798%2FFunctions%2F543916811" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:media:readium-navigator-media-tts/release" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="skip-to-next-utterance.html"><span>skip</span><wbr><span>To</span><wbr><span>Next</span><wbr><span><span>Utterance</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-786109798%2FFunctions%2F543916811"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:media:readium-navigator-media-tts/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="skip-to-next-utterance.html"><span class="token function">skipToNextUtterance</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1215810530%2FFunctions%2F543916811" anchor-label="skipToPreviousUtterance" id="-1215810530%2FFunctions%2F543916811" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:media:readium-navigator-media-tts/release" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="skip-to-previous-utterance.html"><span>skip</span><wbr><span>To</span><wbr><span>Previous</span><wbr><span><span>Utterance</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1215810530%2FFunctions%2F543916811"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:media:readium-navigator-media-tts/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="skip-to-previous-utterance.html"><span class="token function">skipToPreviousUtterance</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1009223782%2FFunctions%2F543916811" anchor-label="submitPreferences" id="1009223782%2FFunctions%2F543916811" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:navigators:media:readium-navigator-media-tts/release" data-filterable-set=":readium:navigators:media:readium-navigator-media-tts/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="submit-preferences.html"><span>submit</span><wbr><span><span>Preferences</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1009223782%2FFunctions%2F543916811"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:navigators:media:readium-navigator-media-tts/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="submit-preferences.html"><span class="token function">submitPreferences</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">preferences<span class="token operator">: </span><a href="index.html">P</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,339 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>org.readium.r2.navigator</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
+                    Readium
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":readium:readium-navigator/release">release</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":readium:readium-navigator/release" data-filter=":readium:readium-navigator/release">
+                                <span class="checkbox--icon"></span>
+                                release
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Readium
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="package" id="content" pageids="readium-navigator::org.readium.r2.navigator////PointingToDeclaration//2046973412">
+  <div class="breadcrumbs"><a href="../index.html">readium-navigator</a><span class="delimiter">/</span><span class="current">org.readium.r2.navigator</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button><button class="section-tab" data-togglable="FUNCTION,EXTENSION_FUNCTION">Functions</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="1304598016%2FClasslikes%2F2046973412" anchor-label="DecorableNavigator" id="1304598016%2FClasslikes%2F2046973412" data-filterable-set=":readium:readium-navigator/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-navigator/release" data-filterable-set=":readium:readium-navigator/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-decorable-navigator/index.html"><span>Decorable</span><wbr><span><span>Navigator</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1304598016%2FClasslikes%2F2046973412"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-navigator/release"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-decorable-navigator/index.html">DecorableNavigator</a> : <a href="-navigator/index.html">Navigator</a></div><div class="brief "><p class="paragraph">A navigator able to render arbitrary decorations over a publication.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-352410584%2FClasslikes%2F2046973412" anchor-label="Decoration" id="-352410584%2FClasslikes%2F2046973412" data-filterable-set=":readium:readium-navigator/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-navigator/release" data-filterable-set=":readium:readium-navigator/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-decoration/index.html"><span><span>Decoration</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-352410584%2FClasslikes%2F2046973412"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-navigator/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-decoration/index.html">Decoration</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>id<span class="token operator">: </span><a href="-decoration-id/index.html">DecorationId</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>locator<span class="token operator">: </span><a href="../../../readium/readium-shared/org.readium.r2.shared.publication/-locator/index.html">Locator</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>style<span class="token operator">: </span><a href="-decoration/-style/index.html">Decoration.Style</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>extras<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt;</span><span class="token operator"> = </span>mapOf()</span></span><span class="token punctuation">)</span> : <a href="../../../readium/readium-shared/org.readium.r2.shared/-j-s-o-nable/index.html">JSONable</a>, <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div><div class="brief "><p class="paragraph">A decoration is a user interface element drawn on top of a publication. It associates a <a href="../../../readium/readium-navigator/org.readium.r2.navigator/-decoration/--root--.html">style</a> to be rendered with a discrete <a href="../../../readium/readium-navigator/org.readium.r2.navigator/-decoration/--root--.html">locator</a> in the publication.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1065846504%2FClasslikes%2F2046973412" anchor-label="DecorationChange" id="-1065846504%2FClasslikes%2F2046973412" data-filterable-set=":readium:readium-navigator/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-navigator/release" data-filterable-set=":readium:readium-navigator/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-decoration-change/index.html"><span>Decoration</span><wbr><span><span>Change</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1065846504%2FClasslikes%2F2046973412"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-navigator/release"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="-decoration-change/index.html">DecorationChange</a></div><div class="brief "><p class="paragraph">Represents an atomic change in a list of <a href="-decoration/index.html">Decoration</a> objects.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="136659341%2FClasslikes%2F2046973412" anchor-label="DecorationId" id="136659341%2FClasslikes%2F2046973412" data-filterable-set=":readium:readium-navigator/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-navigator/release" data-filterable-set=":readium:readium-navigator/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-decoration-id/index.html"><span>Decoration</span><wbr><span><span>Id</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="136659341%2FClasslikes%2F2046973412"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-navigator/release"><div class="symbol monospace"><span class="token keyword">typealias </span><a href="-decoration-id/index.html">DecorationId</a><span class="token operator"> = </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Unique identifier for a decoration.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1029550183%2FClasslikes%2F2046973412" anchor-label="HyperlinkNavigator" id="1029550183%2FClasslikes%2F2046973412" data-filterable-set=":readium:readium-navigator/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-navigator/release" data-filterable-set=":readium:readium-navigator/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-hyperlink-navigator/index.html"><span>Hyperlink</span><wbr><span><span>Navigator</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1029550183%2FClasslikes%2F2046973412"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-navigator/release"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-hyperlink-navigator/index.html">HyperlinkNavigator</a> : <a href="-navigator/index.html">Navigator</a></div><div class="brief "><p class="paragraph">A navigator supporting hyperlinks.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-470967757%2FClasslikes%2F2046973412" anchor-label="Navigator" id="-470967757%2FClasslikes%2F2046973412" data-filterable-set=":readium:readium-navigator/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-navigator/release" data-filterable-set=":readium:readium-navigator/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-navigator/index.html"><span><span>Navigator</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-470967757%2FClasslikes%2F2046973412"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-navigator/release"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-navigator/index.html">Navigator</a></div><div class="brief "><p class="paragraph">Base interface for a navigator rendering a publication.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-672903229%2FClasslikes%2F2046973412" anchor-label="NavigatorFragment" id="-672903229%2FClasslikes%2F2046973412" data-filterable-set=":readium:readium-navigator/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-navigator/release" data-filterable-set=":readium:readium-navigator/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-navigator-fragment/index.html"><span>Navigator</span><wbr><span><span>Fragment</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-672903229%2FClasslikes%2F2046973412"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-navigator/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">class </span><a href="-navigator-fragment/index.html">NavigatorFragment</a> : <a href="https://developer.android.com/reference/kotlin/androidx/fragment/app/Fragment.html">Fragment</a>, <a href="-navigator/index.html">Navigator</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-824800721%2FClasslikes%2F2046973412" anchor-label="OverflowableNavigator" id="-824800721%2FClasslikes%2F2046973412" data-filterable-set=":readium:readium-navigator/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-navigator/release" data-filterable-set=":readium:readium-navigator/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-overflowable-navigator/index.html"><span>Overflowable</span><wbr><span><span>Navigator</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-824800721%2FClasslikes%2F2046973412"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-navigator/release"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-overflowable-navigator/index.html">OverflowableNavigator</a> : <a href="-visual-navigator/index.html">VisualNavigator</a></div><div class="brief "><p class="paragraph">A <a href="-visual-navigator/index.html">VisualNavigator</a> with content that can extend beyond the viewport.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1098614046%2FClasslikes%2F2046973412" anchor-label="RestorationNotSupportedException" id="-1098614046%2FClasslikes%2F2046973412" data-filterable-set=":readium:readium-navigator/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-navigator/release" data-filterable-set=":readium:readium-navigator/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-restoration-not-supported-exception/index.html"><span>Restoration</span><wbr><span>Not</span><wbr><span>Supported</span><wbr><span><span>Exception</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1098614046%2FClasslikes%2F2046973412"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-navigator/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-restoration-not-supported-exception/index.html">RestorationNotSupportedException</a> : <a href="https://developer.android.com/reference/kotlin/java/lang/Exception.html">Exception</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-584881687%2FClasslikes%2F2046973412" anchor-label="SelectableNavigator" id="-584881687%2FClasslikes%2F2046973412" data-filterable-set=":readium:readium-navigator/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-navigator/release" data-filterable-set=":readium:readium-navigator/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-selectable-navigator/index.html"><span>Selectable</span><wbr><span><span>Navigator</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-584881687%2FClasslikes%2F2046973412"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-navigator/release"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-selectable-navigator/index.html">SelectableNavigator</a> : <a href="-navigator/index.html">Navigator</a></div><div class="brief "><p class="paragraph">A navigator supporting user selection.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="356542622%2FClasslikes%2F2046973412" anchor-label="Selection" id="356542622%2FClasslikes%2F2046973412" data-filterable-set=":readium:readium-navigator/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-navigator/release" data-filterable-set=":readium:readium-navigator/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-selection/index.html"><span><span>Selection</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="356542622%2FClasslikes%2F2046973412"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-navigator/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-selection/index.html">Selection</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>locator<span class="token operator">: </span><a href="../../../readium/readium-shared/org.readium.r2.shared.publication/-locator/index.html">Locator</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>rect<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/graphics/RectF.html">RectF</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Represents a user content selection in a navigator.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1279904260%2FClasslikes%2F2046973412" anchor-label="SimpleOverflow" id="1279904260%2FClasslikes%2F2046973412" data-filterable-set=":readium:readium-navigator/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-navigator/release" data-filterable-set=":readium:readium-navigator/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-simple-overflow/index.html"><span>Simple</span><wbr><span><span>Overflow</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1279904260%2FClasslikes%2F2046973412"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-navigator/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-simple-overflow/index.html">SimpleOverflow</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>readingProgression<span class="token operator">: </span><a href="../org.readium.r2.navigator.preferences/-reading-progression/index.html">ReadingProgression</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>scroll<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>axis<span class="token operator">: </span><a href="../org.readium.r2.navigator.preferences/-axis/index.html">Axis</a></span></span><span class="token punctuation">)</span> : <a href="-overflowable-navigator/-overflow/index.html">OverflowableNavigator.Overflow</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1710993709%2FClasslikes%2F2046973412" anchor-label="VisualNavigator" id="-1710993709%2FClasslikes%2F2046973412" data-filterable-set=":readium:readium-navigator/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-navigator/release" data-filterable-set=":readium:readium-navigator/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-visual-navigator/index.html"><span>Visual</span><wbr><span><span>Navigator</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1710993709%2FClasslikes%2F2046973412"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-navigator/release"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-visual-navigator/index.html">VisualNavigator</a> : <a href="-navigator/index.html">Navigator</a></div><div class="brief "><p class="paragraph">A navigator rendering the publication visually on-screen.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="EXTENSION_FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="619795406%2FFunctions%2F2046973412" anchor-label="changesByHref" id="619795406%2FFunctions%2F2046973412" data-filterable-set=":readium:readium-navigator/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-navigator/release" data-filterable-set=":readium:readium-navigator/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="changes-by-href.html"><span>changes</span><wbr><span>By</span><wbr><span><span>Href</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="619795406%2FFunctions%2F2046973412"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-navigator/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-decoration/index.html">Decoration</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="changes-by-href.html"><span class="token function">changesByHref</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">target<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-decoration/index.html">Decoration</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="../../../readium/readium-shared/org.readium.r2.shared.util/-url/index.html">Url</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-decoration-change/index.html">DecorationChange</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Lists the atomic changes between the receiver list and the <a href="changes-by-href.html">target</a> list of <a href="-decoration/index.html">Decoration</a> objects.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

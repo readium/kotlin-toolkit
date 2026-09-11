@@ -1,0 +1,434 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>AccessibilityMetadataDisplayGuide</title>
+<link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../../index.html" tabindex="1">
+                    Readium
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":readium:readium-shared/release">release</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":readium:readium-shared/release" data-filter=":readium:readium-shared/release">
+                                <span class="checkbox--icon"></span>
+                                release
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Readium
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="readium-shared::org.readium.r2.shared.accessibility/AccessibilityMetadataDisplayGuide///PointingToDeclaration//-1013710462">
+  <div class="breadcrumbs"><a href="../../index.html">readium-shared</a><span class="delimiter">/</span><a href="../index.html">org.readium.r2.shared.accessibility</a><span class="delimiter">/</span><span class="current">AccessibilityMetadataDisplayGuide</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Accessibility</span><wbr><span>Metadata</span><wbr><span>Display</span><wbr><span><span>Guide</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">AccessibilityMetadataDisplayGuide</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>waysOfReading<span class="token operator">: </span><a href="-ways-of-reading/index.html">AccessibilityMetadataDisplayGuide.WaysOfReading</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>navigation<span class="token operator">: </span><a href="-navigation/index.html">AccessibilityMetadataDisplayGuide.Navigation</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>richContent<span class="token operator">: </span><a href="-rich-content/index.html">AccessibilityMetadataDisplayGuide.RichContent</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>additionalInformation<span class="token operator">: </span><a href="-additional-information/index.html">AccessibilityMetadataDisplayGuide.AdditionalInformation</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>hazards<span class="token operator">: </span><a href="-hazards/index.html">AccessibilityMetadataDisplayGuide.Hazards</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>conformance<span class="token operator">: </span><a href="-conformance/index.html">AccessibilityMetadataDisplayGuide.Conformance</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>legal<span class="token operator">: </span><a href="-legal/index.html">AccessibilityMetadataDisplayGuide.Legal</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>accessibilitySummary<span class="token operator">: </span><a href="-accessibility-summary/index.html">AccessibilityMetadataDisplayGuide.AccessibilitySummary</a></span></span><span class="token punctuation">)</span></div><p class="paragraph">When presenting accessibility metadata provided by the publisher, it is suggested that the section is introduced using terms such as "claims" or "declarations" (e.g., "Accessibility Claims").</p><h4 class="tableheader">Parameters</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>ways</span><wbr><span>Of</span><wbr><span><span>Reading</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The ways of reading display field is a banner heading that groups together the following information about how the content facilitates access.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>navigation</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Identifies the navigation features included in the publication.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>rich</span><wbr><span><span>Content</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Indicates the presence of math, chemical formulas, extended descriptions for information rich images, e.g., charts, diagrams, figures, graphs, and whether these are in an accessible format or available in an alternative form, e.g., whether math and chemical formulas are navigable with assistive technologies, or whether extended descriptions are available for information-rich images. In addition, it indicates the presence of videos and if closed captions, open captions, or transcripts for prerecorded audio are available.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>additional</span><wbr><span><span>Information</span></span></u></div></span></div><div><div class="title"><p class="paragraph">This section lists additional metadata categories that can help users better understand the accessibility characteristics of digital publications. These are for metadata that do not fit into the other categories or are rarely used in trade publishing.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>hazards</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Identifies any potential hazards (e.g., flashing elements, sounds, and motion simulation) that could afflict physiologically sensitive users.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>conformance</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Identifies whether the digital publication claims to meet internationally recognized conformance standards for accessibility.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>legal</span></span></u></div></span></div><div><div class="title"><p class="paragraph">In some jurisdictions publishers may be able to claim an exemption from the provision of accessible publications, including the provision of accessibility metadata. This should always be subject to clarification by legal counsel for each jurisdiction.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>accessibility</span><wbr><span><span>Summary</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The accessibility summary was intended (in EPUB Accessibility 1.0) to describe in human-readable prose the accessibility features present in the publication as well as any shortcomings. Starting with EPUB Accessibility version 1.1 the accessibility summary became a human- readable summary of the accessibility that complements, but does not duplicate, the other discoverability metadata.</p></div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="tableheader">Constructors</h2>
+        <div class="table"><a data-name="-1941331111%2FConstructors%2F-1013710462" anchor-label="AccessibilityMetadataDisplayGuide" id="-1941331111%2FConstructors%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-accessibility-metadata-display-guide.html"><span>Accessibility</span><wbr><span>Metadata</span><wbr><span>Display</span><wbr><span><span>Guide</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1941331111%2FConstructors%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">waysOfReading<span class="token operator">: </span><a href="-ways-of-reading/index.html">AccessibilityMetadataDisplayGuide.WaysOfReading</a><span class="token punctuation">, </span></span><span class="parameter ">navigation<span class="token operator">: </span><a href="-navigation/index.html">AccessibilityMetadataDisplayGuide.Navigation</a><span class="token punctuation">, </span></span><span class="parameter ">richContent<span class="token operator">: </span><a href="-rich-content/index.html">AccessibilityMetadataDisplayGuide.RichContent</a><span class="token punctuation">, </span></span><span class="parameter ">additionalInformation<span class="token operator">: </span><a href="-additional-information/index.html">AccessibilityMetadataDisplayGuide.AdditionalInformation</a><span class="token punctuation">, </span></span><span class="parameter ">hazards<span class="token operator">: </span><a href="-hazards/index.html">AccessibilityMetadataDisplayGuide.Hazards</a><span class="token punctuation">, </span></span><span class="parameter ">conformance<span class="token operator">: </span><a href="-conformance/index.html">AccessibilityMetadataDisplayGuide.Conformance</a><span class="token punctuation">, </span></span><span class="parameter ">legal<span class="token operator">: </span><a href="-legal/index.html">AccessibilityMetadataDisplayGuide.Legal</a><span class="token punctuation">, </span></span><span class="parameter ">accessibilitySummary<span class="token operator">: </span><a href="-accessibility-summary/index.html">AccessibilityMetadataDisplayGuide.AccessibilitySummary</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">publication<span class="token operator">: </span><a href="../../org.readium.r2.shared.publication/-publication/index.html">Publication</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Creates a new display guide for the given <code class="lang-kotlin">publication</code> metadata.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="-1185961607%2FClasslikes%2F-1013710462" anchor-label="AccessibilitySummary" id="-1185961607%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-accessibility-summary/index.html"><span>Accessibility</span><wbr><span><span>Summary</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1185961607%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-accessibility-summary/index.html">AccessibilitySummary</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>summary<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span> : <a href="-field/index.html">AccessibilityMetadataDisplayGuide.Field</a></div><div class="brief "><p class="paragraph">The accessibility summary was intended (in EPUB Accessibility 1.0) to describe in human-readable prose the accessibility features present in the publication as well as any shortcomings. Starting with EPUB Accessibility version 1.1 the accessibility summary became a human- readable summary of the accessibility that complements, but does not duplicate, the other discoverability metadata.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1333043340%2FClasslikes%2F-1013710462" anchor-label="AdditionalInformation" id="1333043340%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-additional-information/index.html"><span>Additional</span><wbr><span><span>Information</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1333043340%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-additional-information/index.html">AdditionalInformation</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>pageBreakMarkers<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>aria<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>audioDescriptions<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>braille<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>rubyAnnotations<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>fullRubyAnnotations<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>highAudioContrast<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>highDisplayContrast<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>largePrint<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>signLanguage<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>tactileGraphics<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>tactileObjects<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>textToSpeechHinting<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span> : <a href="-field/index.html">AccessibilityMetadataDisplayGuide.Field</a></div><div class="brief "><p class="paragraph">This section lists additional metadata categories that can help users better understand the accessibility characteristics of digital publications. These are for metadata that do not fit into the other categories or are rarely used in trade publishing.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1434824060%2FClasslikes%2F-1013710462" anchor-label="Conformance" id="1434824060%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-conformance/index.html"><span><span>Conformance</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1434824060%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-conformance/index.html">Conformance</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>profiles<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="../../org.readium.r2.shared.publication/-accessibility/-profile/index.html">Accessibility.Profile</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptySet()</span></span><span class="token punctuation">)</span> : <a href="-field/index.html">AccessibilityMetadataDisplayGuide.Field</a></div><div class="brief "><p class="paragraph">Identifies whether the digital publication claims to meet internationally recognized conformance standards for accessibility.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1519447113%2FClasslikes%2F-1013710462" anchor-label="Field" id="-1519447113%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-field/index.html"><span><span>Field</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1519447113%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">interface </span><a href="-field/index.html">Field</a></div><div class="brief "><p class="paragraph">Represents a collection of related accessibility claims which should be displayed together in a section.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-339438608%2FClasslikes%2F-1013710462" anchor-label="Hazards" id="-339438608%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-hazards/index.html"><span><span>Hazards</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-339438608%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-hazards/index.html">Hazards</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>flashing<span class="token operator">: </span><a href="-hazards/-hazard/index.html">AccessibilityMetadataDisplayGuide.Hazards.Hazard</a><span class="token operator"> = </span>Hazard.NO_METADATA<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>motion<span class="token operator">: </span><a href="-hazards/-hazard/index.html">AccessibilityMetadataDisplayGuide.Hazards.Hazard</a><span class="token operator"> = </span>Hazard.NO_METADATA<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>sound<span class="token operator">: </span><a href="-hazards/-hazard/index.html">AccessibilityMetadataDisplayGuide.Hazards.Hazard</a><span class="token operator"> = </span>Hazard.NO_METADATA</span></span><span class="token punctuation">)</span> : <a href="-field/index.html">AccessibilityMetadataDisplayGuide.Field</a></div><div class="brief "><p class="paragraph">Identifies any potential hazards (e.g., flashing elements, sounds, and motion simulation) that could afflict physiologically sensitive users.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2116843224%2FClasslikes%2F-1013710462" anchor-label="Legal" id="2116843224%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-legal/index.html"><span><span>Legal</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2116843224%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-legal/index.html">Legal</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>exemption<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span> : <a href="-field/index.html">AccessibilityMetadataDisplayGuide.Field</a></div><div class="brief "><p class="paragraph">In some jurisdictions publishers may be able to claim an exemption from the provision of accessible publications, including the provision of accessibility metadata. This should always be subject to clarification by legal counsel for each jurisdiction.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1839636829%2FClasslikes%2F-1013710462" anchor-label="Navigation" id="1839636829%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-navigation/index.html"><span><span>Navigation</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1839636829%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-navigation/index.html">Navigation</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>tableOfContents<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>index<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>headings<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>page<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span> : <a href="-field/index.html">AccessibilityMetadataDisplayGuide.Field</a></div><div class="brief "><p class="paragraph">Identifies the navigation features included in the publication.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1662309868%2FClasslikes%2F-1013710462" anchor-label="RichContent" id="-1662309868%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-rich-content/index.html"><span>Rich</span><wbr><span><span>Content</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1662309868%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-rich-content/index.html">RichContent</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>extendedAltTextDescriptions<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>mathFormula<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>mathFormulaAsMathML<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>mathFormulaAsLaTeX<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>chemicalFormulaAsMathML<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>chemicalFormulaAsLaTeX<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>closedCaptions<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>openCaptions<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>transcript<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span> : <a href="-field/index.html">AccessibilityMetadataDisplayGuide.Field</a></div><div class="brief "><p class="paragraph">Indicates the presence of math, chemical formulas, extended descriptions for information rich images, e.g., charts, diagrams, figures, graphs, and whether these are in an accessible format or available in an alternative form, e.g., whether math and chemical formulas are navigable with assistive technologies, or whether extended descriptions are available for information-rich images. In addition, it indicates the presence of videos and if closed captions, open captions, or transcripts for prerecorded audio are available.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-855119646%2FClasslikes%2F-1013710462" anchor-label="Statement" id="-855119646%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-statement/index.html"><span><span>Statement</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-855119646%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">interface </span><a href="-statement/index.html">Statement</a></div><div class="brief "><p class="paragraph">Represents a single accessibility claim, such as "Appearance can be modified".</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1251531488%2FClasslikes%2F-1013710462" anchor-label="WaysOfReading" id="1251531488%2FClasslikes%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-ways-of-reading/index.html"><span>Ways</span><wbr><span>Of</span><wbr><span><span>Reading</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1251531488%2FClasslikes%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-ways-of-reading/index.html">WaysOfReading</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>visualAdjustments<span class="token operator">: </span><a href="-ways-of-reading/-visual-adjustments/index.html">AccessibilityMetadataDisplayGuide.WaysOfReading.VisualAdjustments</a><span class="token operator"> = </span>VisualAdjustments.UNKNOWN<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>nonvisualReading<span class="token operator">: </span><a href="-ways-of-reading/-nonvisual-reading/index.html">AccessibilityMetadataDisplayGuide.WaysOfReading.NonvisualReading</a><span class="token operator"> = </span>NonvisualReading.NO_METADATA<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>nonvisualReadingAltText<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>prerecordedAudio<span class="token operator">: </span><a href="-ways-of-reading/-prerecorded-audio/index.html">AccessibilityMetadataDisplayGuide.WaysOfReading.PrerecordedAudio</a><span class="token operator"> = </span>PrerecordedAudio.NO_METADATA</span></span><span class="token punctuation">)</span> : <a href="-field/index.html">AccessibilityMetadataDisplayGuide.Field</a></div><div class="brief "><p class="paragraph">The ways of reading display field is a banner heading that groups together the following information about how the content facilitates access.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="-154348348%2FProperties%2F-1013710462" anchor-label="accessibilitySummary" id="-154348348%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="accessibility-summary.html"><span>accessibility</span><wbr><span><span>Summary</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-154348348%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="accessibility-summary.html">accessibilitySummary</a><span class="token operator">: </span><a href="-accessibility-summary/index.html">AccessibilityMetadataDisplayGuide.AccessibilitySummary</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="600688697%2FProperties%2F-1013710462" anchor-label="additionalInformation" id="600688697%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="additional-information.html"><span>additional</span><wbr><span><span>Information</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="600688697%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="additional-information.html">additionalInformation</a><span class="token operator">: </span><a href="-additional-information/index.html">AccessibilityMetadataDisplayGuide.AdditionalInformation</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="553769577%2FProperties%2F-1013710462" anchor-label="conformance" id="553769577%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="conformance.html"><span><span>conformance</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="553769577%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="conformance.html">conformance</a><span class="token operator">: </span><a href="-conformance/index.html">AccessibilityMetadataDisplayGuide.Conformance</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1490302435%2FProperties%2F-1013710462" anchor-label="fields" id="1490302435%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="fields.html"><span><span>fields</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1490302435%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="fields.html">fields</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-field/index.html">AccessibilityMetadataDisplayGuide.Field</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns the list of display fields in their recommended order.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1617847971%2FProperties%2F-1013710462" anchor-label="hazards" id="-1617847971%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="hazards.html"><span><span>hazards</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1617847971%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="hazards.html">hazards</a><span class="token operator">: </span><a href="-hazards/index.html">AccessibilityMetadataDisplayGuide.Hazards</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-661127035%2FProperties%2F-1013710462" anchor-label="legal" id="-661127035%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="legal.html"><span><span>legal</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-661127035%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="legal.html">legal</a><span class="token operator">: </span><a href="-legal/index.html">AccessibilityMetadataDisplayGuide.Legal</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-320135320%2FProperties%2F-1013710462" anchor-label="navigation" id="-320135320%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="navigation.html"><span><span>navigation</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-320135320%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="navigation.html">navigation</a><span class="token operator">: </span><a href="-navigation/index.html">AccessibilityMetadataDisplayGuide.Navigation</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1751602945%2FProperties%2F-1013710462" anchor-label="richContent" id="1751602945%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="rich-content.html"><span>rich</span><wbr><span><span>Content</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1751602945%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="rich-content.html">richContent</a><span class="token operator">: </span><a href="-rich-content/index.html">AccessibilityMetadataDisplayGuide.RichContent</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1843049357%2FProperties%2F-1013710462" anchor-label="waysOfReading" id="1843049357%2FProperties%2F-1013710462" data-filterable-set=":readium:readium-shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":readium:readium-shared/release" data-filterable-set=":readium:readium-shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="ways-of-reading.html"><span>ways</span><wbr><span>Of</span><wbr><span><span>Reading</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1843049357%2FProperties%2F-1013710462"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":readium:readium-shared/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="ways-of-reading.html">waysOfReading</a><span class="token operator">: </span><a href="-ways-of-reading/index.html">AccessibilityMetadataDisplayGuide.WaysOfReading</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

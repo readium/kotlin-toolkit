@@ -1,0 +1,1483 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Readium Mobile is a toolkit for ebooks, audiobooks and comics written in Swift & Kotlin.">
+      
+      
+        <meta name="author" content="Readium Foundation">
+      
+      
+        <link rel="canonical" href="https://github.com/readium/kotlin-toolkit/3.4.0/guides/tts/">
+      
+      
+        <link rel="prev" href="../pdf/">
+      
+      
+        <link rel="next" href="../accessibility/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Text-to-speech - Readium Kotlin</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../readium_colors.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#text-to-speech" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Readium Kotlin" class="md-header__button md-logo" aria-label="Readium Kotlin" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Readium Kotlin
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Text-to-speech
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/readium/kotlin-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kotlin-toolkit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../migration-guide/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Migration Guide
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../api/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../getting-started/" class="md-tabs__link">
+          
+  
+  
+  User Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Readium Kotlin" class="md-nav__button md-logo" aria-label="Readium Kotlin" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Readium Kotlin
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/readium/kotlin-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kotlin-toolkit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migration Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extracting the content of a publication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../open-publication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Opening a publication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../navigator/navigator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Navigator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../navigator/web-navigators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web navigators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../navigator/media-navigator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Media navigator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../navigator/preferences/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Navigator preferences
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../navigator/epub-fonts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EPUB font families
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pdf/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PDF support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Text-to-speech
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Text-to-speech
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#glossary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Glossary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-started" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Getting started
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuring-the-android-tts-navigator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuring the Android TTS navigator
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuring the Android TTS navigator">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#language-preference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Language preference
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#voices-preference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Voices preference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Voices preference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installing-missing-voice-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installing missing voice data
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#synchronizing-the-tts-navigator-with-a-visual-navigator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Synchronizing the TTS navigator with a visual navigator
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Synchronizing the TTS navigator with a visual navigator">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#starting-the-tts-from-the-visible-page" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Starting the TTS from the visible page
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#highlighting-the-currently-spoken-utterance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Highlighting the currently spoken utterance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#turning-pages-automatically" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Turning pages automatically
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-customizations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced customizations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced customizations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#utterance-tokenizer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Utterance tokenizer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-tts-engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom TTS engine
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../accessibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Accessibility
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/lcp.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LCP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#glossary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Glossary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-started" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Getting started
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuring-the-android-tts-navigator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuring the Android TTS navigator
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuring the Android TTS navigator">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#language-preference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Language preference
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#voices-preference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Voices preference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Voices preference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installing-missing-voice-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installing missing voice data
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#synchronizing-the-tts-navigator-with-a-visual-navigator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Synchronizing the TTS navigator with a visual navigator
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Synchronizing the TTS navigator with a visual navigator">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#starting-the-tts-from-the-visible-page" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Starting the TTS from the visible page
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#highlighting-the-currently-spoken-utterance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Highlighting the currently spoken utterance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#turning-pages-automatically" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Turning pages automatically
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-customizations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced customizations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced customizations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#utterance-tokenizer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Utterance tokenizer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-tts-engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom TTS engine
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation" >
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../.." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Home
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../getting-started/" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    User Guides
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="text-to-speech">Text-to-speech<a class="headerlink" href="#text-to-speech" title="Permanent link">&para;</a></h1>
+<p>Text-to-speech can read aloud a publication using a synthetic voice. The Readium toolkit includes an implementation based on the <a href="https://developer.android.com/reference/android/speech/tts/TextToSpeech">Android TTS engine</a>, but it can be extended to use a different TTS engine.</p>
+<h2 id="glossary">Glossary<a class="headerlink" href="#glossary" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>utterance</strong> - a single piece of text played by a TTS engine, such as a sentence</li>
+<li><strong>tokenizer</strong> - algorithm splitting the publication text content into individual utterances, usually by sentences</li>
+<li><strong>engine</strong> – a TTS engine takes an utterance and transforms it into audio using a synthetic voice</li>
+<li><strong>voice</strong> – a synthetic voice is used by a TTS engine to speak a text in a way suitable for the language and region</li>
+</ul>
+<h2 id="getting-started">Getting started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h2>
+<p>:warning: Apps targeting Android 11 that use the native text-to-speech must declare <code>INTENT_ACTION_TTS_SERVICE</code> in the queries elements of their manifest.</p>
+<div class="highlight"><pre><span></span><code><span class="nt">&lt;queries&gt;</span>
+<span class="w">  </span><span class="nt">&lt;intent&gt;</span>
+<span class="w">      </span><span class="nt">&lt;action</span><span class="w"> </span><span class="na">android:name=</span><span class="s">"android.intent.action.TTS_SERVICE"</span><span class="w"> </span><span class="nt">/&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/intent&gt;</span>
+<span class="nt">&lt;/queries&gt;</span>
+</code></pre></div>
+<p>The text-to-speech feature is implemented as a standalone <code>Navigator</code>, which can render any publication with a <a href="../content/">Content Service</a>, such as an EPUB. This means you don't need an <code>EpubNavigatorFragment</code> open to read the publication; you can use the TTS navigator in the background.</p>
+<p>To get a new instance of <code>TtsNavigator</code>, first create an <code>AndroidTtsNavigatorFactory</code> to use the default Android TTS engine.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">factory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AndroidTtsNavigatorFactory</span><span class="p">(</span><span class="n">application</span><span class="p">,</span><span class="w"> </span><span class="n">publication</span><span class="p">)</span>
+<span class="w">    </span><span class="o">?:</span><span class="w"> </span><span class="k">throw</span><span class="w"> </span><span class="n">Exception</span><span class="p">(</span><span class="s">"This publication cannot be played with the TTS navigator"</span><span class="p">)</span>
+
+<span class="kd">val</span><span class="w"> </span><span class="nv">navigator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">factory</span><span class="p">.</span><span class="na">createNavigator</span><span class="p">()</span>
+<span class="n">navigator</span><span class="p">.</span><span class="na">play</span><span class="p">()</span>
+</code></pre></div>
+<p><code>TtsNavigator</code> implements <code>MediaNavigator</code>, so you can use all the APIs available for media-based playback. Check out the <a href="../navigator/media-navigator/">dedicated user guide</a> to learn how to control <code>TtsNavigator</code> and observe playback notifications.</p>
+<h2 id="configuring-the-android-tts-navigator">Configuring the Android TTS navigator<a class="headerlink" href="#configuring-the-android-tts-navigator" title="Permanent link">&para;</a></h2>
+<p>The <code>AndroidTtsNavigator</code> implements <a href="../navigator/preferences/"><code>Configurable</code></a> and provides various settings to customize the text-to-speech experience.</p>
+<div class="highlight"><pre><span></span><code><span class="n">navigator</span><span class="p">.</span><span class="na">submitPreferences</span><span class="p">(</span><span class="n">AndroidTtsPreferences</span><span class="p">(</span>
+<span class="w">    </span><span class="n">language</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Language</span><span class="p">(</span><span class="s">"fr"</span><span class="p">),</span>
+<span class="w">    </span><span class="n">pitch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.8f</span><span class="p">,</span>
+<span class="w">    </span><span class="n">speed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5f</span>
+<span class="p">))</span>
+</code></pre></div>
+<p>A <code>PreferencesEditor</code> is available to help you construct your user interface and modify the preferences.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">factory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AndroidTtsNavigatorFactory</span><span class="p">(</span><span class="n">application</span><span class="p">,</span><span class="w"> </span><span class="n">publication</span><span class="p">)</span>
+<span class="w">    </span><span class="o">?:</span><span class="w"> </span><span class="k">throw</span><span class="w"> </span><span class="n">Exception</span><span class="p">(</span><span class="s">"This publication cannot be played with the TTS navigator"</span><span class="p">)</span>
+
+<span class="kd">val</span><span class="w"> </span><span class="nv">navigator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">factory</span><span class="p">.</span><span class="na">createNavigator</span><span class="p">()</span>
+
+<span class="kd">val</span><span class="w"> </span><span class="nv">editor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">factory</span><span class="p">.</span><span class="na">createPreferencesEditor</span><span class="p">(</span><span class="n">preferences</span><span class="p">)</span>
+<span class="n">editor</span><span class="p">.</span><span class="na">pitch</span><span class="p">.</span><span class="na">increment</span><span class="p">()</span>
+<span class="n">navigator</span><span class="p">.</span><span class="na">submitPreferences</span><span class="p">(</span><span class="n">editor</span><span class="p">.</span><span class="na">preferences</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="language-preference">Language preference<a class="headerlink" href="#language-preference" title="Permanent link">&para;</a></h3>
+<p>The language set in the preferences determines the default voice used and how the publication text content is tokenized – i.e. split in utterances.</p>
+<p>By default, the TTS navigator uses any language explicitly set on a text element (e.g. <code>lang="fr"</code> in HTML) and, if none is set, it falls back on the language declared in the publication manifest. Providing an explicit language preference is useful when the publication language is incorrect or missing.</p>
+<h3 id="voices-preference">Voices preference<a class="headerlink" href="#voices-preference" title="Permanent link">&para;</a></h3>
+<p>The Android TTS engine supports multiple voices. To allow users to choose their preferred voice for each language, they are stored as a dictionary <code>Map&lt;Language, AndroidTtsEngine.Voice.Id?&gt;</code> in <code>AndroidTtsPreferences</code>.</p>
+<p>Use the <code>voices</code> property of the <code>AndroidTtsNavigator</code> instance to get the full list of available voices.</p>
+<p>Users don't expect to see all available voices at once, as they depend on the selected language. To get an <code>EnumPreference&lt;AndroidTtsEngine.Voice.Id?&gt;</code> based on the current <code>language</code> preference, you can use the following snippet.</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// We remove the region to show all the voices for a given language, no matter the region (e.g. Canada, France).</span>
+<span class="kd">val</span><span class="w"> </span><span class="nv">currentLanguage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">editor</span><span class="p">.</span><span class="na">language</span><span class="p">.</span><span class="na">effectiveValue</span><span class="o">?.</span><span class="na">removeRegion</span><span class="p">()</span>
+
+<span class="kd">val</span><span class="w"> </span><span class="nv">voice</span><span class="p">:</span><span class="w"> </span><span class="n">EnumPreference</span><span class="o">&lt;</span><span class="n">AndroidTtsEngine</span><span class="p">.</span><span class="na">Voice</span><span class="p">.</span><span class="na">Id</span><span class="o">?&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">editor</span><span class="p">.</span><span class="na">voices</span>
+<span class="w">    </span><span class="p">.</span><span class="na">map</span><span class="p">(</span>
+<span class="w">        </span><span class="n">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">voices</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">            </span><span class="n">currentLanguage</span><span class="o">?.</span><span class="na">let</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">voices</span><span class="o">[</span><span class="nb">it</span><span class="o">]</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="n">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">voice</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">            </span><span class="n">currentLanguage</span>
+<span class="w">                </span><span class="o">?.</span><span class="na">let</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">editor</span><span class="p">.</span><span class="na">voices</span><span class="p">.</span><span class="na">value</span><span class="p">.</span><span class="na">orEmpty</span><span class="p">().</span><span class="na">update</span><span class="p">(</span><span class="nb">it</span><span class="p">,</span><span class="w"> </span><span class="n">voice</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+<span class="w">                </span><span class="o">?:</span><span class="w"> </span><span class="n">editor</span><span class="p">.</span><span class="na">voices</span><span class="p">.</span><span class="na">value</span><span class="p">.</span><span class="na">orEmpty</span><span class="p">()</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">withSupportedValues</span><span class="p">(</span>
+<span class="w">        </span><span class="n">navigator</span><span class="p">.</span><span class="na">voices</span>
+<span class="w">            </span><span class="p">.</span><span class="na">filter</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">language</span><span class="p">.</span><span class="na">removeRegion</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">currentLanguage</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="p">.</span><span class="na">map</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">id</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">)</span>
+
+<span class="kd">fun</span><span class="w"> </span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span><span class="w"> </span><span class="n">V</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">Map</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span><span class="w"> </span><span class="n">V</span><span class="o">&gt;</span><span class="p">.</span><span class="na">update</span><span class="p">(</span><span class="n">key</span><span class="p">:</span><span class="w"> </span><span class="n">K</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="n">V?</span><span class="p">):</span><span class="w"> </span><span class="n">Map</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span><span class="w"> </span><span class="n">V</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="n">buildMap</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">putAll</span><span class="p">(</span><span class="k">this</span><span class="nd">@update</span><span class="p">)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">value</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">remove</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">put</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">)</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+</code></pre></div>
+<h4 id="installing-missing-voice-data">Installing missing voice data<a class="headerlink" href="#installing-missing-voice-data" title="Permanent link">&para;</a></h4>
+<p>:point_up: This only applies if you use the default <code>AndroidTtsEngine</code>.</p>
+<p>If the device lacks the data necessary for the chosen voice, the user needs to manually download it. To do so, call the <code>AndroidTtsEngine.requestInstallVoice()</code> helper when the <code>AndroidTtsEngine.Error.LanguageMissingData</code> error occurs. This will launch the system voice download activity.</p>
+<div class="highlight"><pre><span></span><code><span class="n">navigator</span><span class="p">.</span><span class="na">playback</span>
+<span class="w">    </span><span class="p">.</span><span class="na">onEach</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">playback</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">        </span><span class="p">(</span><span class="n">playback</span><span class="o">?.</span><span class="na">state</span><span class="w"> </span><span class="k">as?</span><span class="w"> </span><span class="n">TtsNavigator</span><span class="p">.</span><span class="na">State</span><span class="p">.</span><span class="na">Failure</span><span class="p">.</span><span class="na">EngineError</span><span class="o">&lt;*&gt;</span><span class="p">)</span>
+<span class="w">            </span><span class="o">?.</span><span class="na">let</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">error</span><span class="w"> </span><span class="k">as?</span><span class="w"> </span><span class="n">AndroidTtsEngine</span><span class="p">.</span><span class="na">Error</span><span class="p">.</span><span class="na">LanguageMissingData</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="o">?.</span><span class="na">let</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">error</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">                </span><span class="n">Timber</span><span class="p">.</span><span class="na">e</span><span class="p">(</span><span class="s">"Missing data for language </span><span class="si">${</span><span class="n">error</span><span class="p">.</span><span class="na">language</span><span class="si">}</span><span class="s">"</span><span class="p">)</span>
+<span class="w">                </span><span class="n">AndroidTtsEngine</span><span class="p">.</span><span class="na">requestInstallVoice</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="p">.</span><span class="na">launchIn</span><span class="p">(</span><span class="n">viewModelScope</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="synchronizing-the-tts-navigator-with-a-visual-navigator">Synchronizing the TTS navigator with a visual navigator<a class="headerlink" href="#synchronizing-the-tts-navigator-with-a-visual-navigator" title="Permanent link">&para;</a></h2>
+<p><code>TtsNavigator</code> is a standalone navigator that can be used to play a publication in the background. However, most apps prefer to display the publication while it is being read aloud. To do this, you can open the publication with a visual navigator (e.g. <code>EpubNavigatorFragment</code>) alongside the <code>TtsNavigator</code>. Then, synchronize the progression between the two navigators and use the Decorator API to highlight the spoken utterances.</p>
+<p>For concrete examples, take a look at <code>TtsViewModel</code> in the Test App.</p>
+<h3 id="starting-the-tts-from-the-visible-page">Starting the TTS from the visible page<a class="headerlink" href="#starting-the-tts-from-the-visible-page" title="Permanent link">&para;</a></h3>
+<p>To start the TTS from the currently visible page, you can use the <code>VisualNavigator.firstVisibleElementLocator()</code> API to feed the initial locator of the <code>TtsNavigator</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">ttsNavigator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ttsNavigatorFactory</span><span class="p">.</span><span class="na">createNavigator</span><span class="p">(</span>
+<span class="w">    </span><span class="n">initialLocator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">navigator</span><span class="w"> </span><span class="k">as?</span><span class="w"> </span><span class="n">VisualNavigator</span><span class="p">)</span><span class="o">?.</span><span class="na">firstVisibleElementLocator</span><span class="p">()</span>
+<span class="p">)</span>
+</code></pre></div>
+<h3 id="highlighting-the-currently-spoken-utterance">Highlighting the currently spoken utterance<a class="headerlink" href="#highlighting-the-currently-spoken-utterance" title="Permanent link">&para;</a></h3>
+<p>To highlight the current utterance on the page, you can apply a <code>Decoration</code> on the utterance locator if the visual navigator implements <code>DecorableNavigator</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">visualNavigator</span><span class="p">:</span><span class="w"> </span><span class="n">DecorableNavigator</span>
+
+<span class="n">ttsNavigator</span><span class="p">.</span><span class="na">location</span>
+<span class="w">    </span><span class="p">.</span><span class="na">map</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">utteranceLocator</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">.</span><span class="na">distinctUntilChanged</span><span class="p">()</span>
+<span class="w">    </span><span class="p">.</span><span class="na">onEach</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">locator</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">        </span><span class="n">navigator</span><span class="p">.</span><span class="na">applyDecorations</span><span class="p">(</span><span class="n">listOf</span><span class="p">(</span>
+<span class="w">            </span><span class="n">Decoration</span><span class="p">(</span>
+<span class="w">                </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"tts-utterance"</span><span class="p">,</span>
+<span class="w">                </span><span class="n">locator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">locator</span><span class="p">,</span>
+<span class="w">                </span><span class="n">style</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Decoration</span><span class="p">.</span><span class="na">Style</span><span class="p">.</span><span class="na">Highlight</span><span class="p">(</span><span class="n">tint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Color</span><span class="p">.</span><span class="na">RED</span><span class="p">)</span>
+<span class="w">            </span><span class="p">)</span>
+<span class="w">        </span><span class="p">),</span><span class="w"> </span><span class="n">group</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"tts"</span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="p">.</span><span class="na">launchIn</span><span class="p">(</span><span class="n">scope</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="turning-pages-automatically">Turning pages automatically<a class="headerlink" href="#turning-pages-automatically" title="Permanent link">&para;</a></h3>
+<p>To keep the visual navigator in sync with the utterance being played, observe the navigator's current <code>location</code> as described above and use <code>navigator.go(location.utteranceLocator)</code>.</p>
+<p>However, this won't turn pages in the middle of an utterance, which can be irritating when speaking a lengthy sentence that spans two pages. To tackle this issue, you can use <code>location.tokenLocator</code> when available. It is updated constantly while you speak each word of an utterance.</p>
+<p>Jumping to the token locator for every word can significantly reduce performance. To address this, it is recommended to use <a href="https://github.com/Kotlin/kotlinx.coroutines/issues/1107#issuecomment-1083076517"><code>throttleLatest</code></a>.</p>
+<div class="highlight"><pre><span></span><code><span class="n">ttsNavigator</span><span class="p">.</span><span class="na">location</span>
+<span class="w">    </span><span class="p">.</span><span class="na">throttleLatest</span><span class="p">(</span><span class="m">1.</span><span class="n">seconds</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">map</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">tokenLocator</span><span class="w"> </span><span class="o">?:</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">utteranceLocator</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">.</span><span class="na">distinctUntilChanged</span><span class="p">()</span>
+<span class="w">    </span><span class="p">.</span><span class="na">onEach</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">locator</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">        </span><span class="n">navigator</span><span class="p">.</span><span class="na">go</span><span class="p">(</span><span class="n">locator</span><span class="p">,</span><span class="w"> </span><span class="n">animated</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="p">.</span><span class="na">launchIn</span><span class="p">(</span><span class="n">scope</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="advanced-customizations">Advanced customizations<a class="headerlink" href="#advanced-customizations" title="Permanent link">&para;</a></h2>
+<h3 id="utterance-tokenizer">Utterance tokenizer<a class="headerlink" href="#utterance-tokenizer" title="Permanent link">&para;</a></h3>
+<p>By default, the <code>TtsNavigator</code> splits the publication text into sentences, but you can supply your own tokenizer to customize how the text is divided.</p>
+<p>For example, this will speak the content word by word:</p>
+<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">navigatorFactory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TtsNavigatorFactory</span><span class="p">(</span>
+<span class="w">    </span><span class="n">application</span><span class="p">,</span><span class="w"> </span><span class="n">publication</span><span class="p">,</span>
+<span class="w">    </span><span class="n">tokenizerFactory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">language</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">        </span><span class="n">DefaultTextContentTokenizer</span><span class="p">(</span><span class="n">unit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TextUnit</span><span class="p">.</span><span class="na">Word</span><span class="p">,</span><span class="w"> </span><span class="n">language</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">language</span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">)</span>
+</code></pre></div>
+<h3 id="custom-tts-engine">Custom TTS engine<a class="headerlink" href="#custom-tts-engine" title="Permanent link">&para;</a></h3>
+<p><code>TtsNavigator</code> is compatible with any TTS engine if you provide an adapter implementing the <code>TtsEngine</code> interface. For an example, take a look at <code>AndroidTtsEngine</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">navigatorFactory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TtsNavigatorFactory</span><span class="p">(</span>
+<span class="w">    </span><span class="n">application</span><span class="p">,</span><span class="w"> </span><span class="n">publication</span><span class="p">,</span>
+<span class="w">    </span><span class="n">engineProvider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MyEngineProvider</span><span class="p">()</span>
+<span class="p">)</span>
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 Readium Foundation
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.path"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

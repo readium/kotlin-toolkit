@@ -1,0 +1,1393 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Readium Mobile is a toolkit for ebooks, audiobooks and comics written in Swift & Kotlin.">
+      
+      
+        <meta name="author" content="Readium Foundation">
+      
+      
+        <link rel="canonical" href="https://github.com/readium/kotlin-toolkit/3.4.0/guides/navigator/media-navigator/">
+      
+      
+        <link rel="prev" href="../web-navigators/">
+      
+      
+        <link rel="next" href="../preferences/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Media navigator - Readium Kotlin</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../readium_colors.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#media-navigator" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Readium Kotlin" class="md-header__button md-logo" aria-label="Readium Kotlin" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Readium Kotlin
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Media navigator
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/readium/kotlin-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kotlin-toolkit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../migration-guide/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Migration Guide
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../api/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../getting-started/" class="md-tabs__link">
+          
+  
+  
+  User Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Readium Kotlin" class="md-nav__button md-logo" aria-label="Readium Kotlin" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Readium Kotlin
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/readium/kotlin-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kotlin-toolkit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../migration-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migration Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../content/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extracting the content of a publication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../open-publication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Opening a publication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../navigator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Navigator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../web-navigators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web navigators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Media navigator
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Media navigator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#controlling-the-playback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controlling the playback
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#observing-the-playback-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observing the playback changes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#specializations-of-medianavigator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Specializations of MediaNavigator
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Specializations of MediaNavigator">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#audio-navigator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audio Navigator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#text-aware-media-navigator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Text-aware Media Navigator
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#background-playback-and-media-notification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background playback and media notification
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Background playback and media notification">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-the-mediasessionservice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Add the MediaSessionService
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#customizing-the-notification-metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Customizing the notification metadata
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preferences/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Navigator preferences
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../epub-fonts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EPUB font families
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pdf/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PDF support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Text-to-speech
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../accessibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Accessibility
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guide/lcp.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LCP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#controlling-the-playback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controlling the playback
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#observing-the-playback-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observing the playback changes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#specializations-of-medianavigator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Specializations of MediaNavigator
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Specializations of MediaNavigator">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#audio-navigator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audio Navigator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#text-aware-media-navigator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Text-aware Media Navigator
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#background-playback-and-media-notification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background playback and media notification
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Background playback and media notification">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-the-mediasessionservice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Add the MediaSessionService
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#customizing-the-notification-metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Customizing the notification metadata
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation" >
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../../.." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Home
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../../getting-started/" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    User Guides
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="media-navigator">Media Navigator<a class="headerlink" href="#media-navigator" title="Permanent link">&para;</a></h1>
+<p>A <code>MediaNavigator</code> implementation can play media-based reading orders, such as audiobooks, text-to-speech rendition, and Media overlays. It enables you to reuse your UI, media controls, and logic related to media playback.</p>
+<h2 id="controlling-the-playback">Controlling the playback<a class="headerlink" href="#controlling-the-playback" title="Permanent link">&para;</a></h2>
+<p>A media navigator provides the API you need to pause or resume playback.</p>
+<div class="highlight"><pre><span></span><code><span class="n">navigator</span><span class="p">.</span><span class="na">pause</span><span class="p">()</span>
+<span class="n">check</span><span class="p">(</span><span class="o">!</span><span class="n">navigator</span><span class="p">.</span><span class="na">playback</span><span class="p">.</span><span class="na">value</span><span class="p">.</span><span class="na">playWhenReady</span><span class="p">)</span>
+
+<span class="n">navigator</span><span class="p">.</span><span class="na">play</span><span class="p">()</span>
+<span class="n">check</span><span class="p">(</span><span class="n">navigator</span><span class="p">.</span><span class="na">playback</span><span class="p">.</span><span class="na">value</span><span class="p">.</span><span class="na">playWhenReady</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="observing-the-playback-changes">Observing the playback changes<a class="headerlink" href="#observing-the-playback-changes" title="Permanent link">&para;</a></h2>
+<p>You can observe the changes in the playback with the <code>navigator.playback</code> flow property.</p>
+<p><code>playWhenReady</code> indicates whether the media is playing or will start playing once the required conditions are met (e.g. buffering). You will typically use this to change the icon of a play/pause button.</p>
+<p>The <code>state</code> property gives more information about the status of the playback:</p>
+<ul>
+<li><code>Ready</code> when the media is ready to be played if <code>playWhenReady</code> is true.</li>
+<li><code>Ended</code> after reaching the end of the reading order items.</li>
+<li><code>Buffering</code> if the navigator cannot play because the buffer is starved.</li>
+<li><code>Error</code> occurs when an error preventing the playback happened.</li>
+</ul>
+<p>By combining the two, you can determine if the media is really playing: <code>playWhenReady &amp;&amp; state == Ready</code>.</p>
+<p>Finally, you can use the <code>index</code> property to know which <code>navigator.readingOrder</code> item is set to be played.</p>
+<div class="highlight"><pre><span></span><code><span class="n">navigator</span><span class="p">.</span><span class="na">playback</span>
+<span class="w">    </span><span class="p">.</span><span class="na">onEach</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">playback</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">        </span><span class="n">playPauseButton</span><span class="p">.</span><span class="na">toggle</span><span class="p">(</span><span class="n">playback</span><span class="p">.</span><span class="na">playWhenReady</span><span class="p">)</span>
+
+<span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">playingItem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">navigator</span><span class="p">.</span><span class="na">readingOrder</span><span class="p">.</span><span class="na">items</span><span class="o">[</span><span class="n">playback</span><span class="p">.</span><span class="na">index</span><span class="o">]</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">playback</span><span class="p">.</span><span class="na">state</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="n">MediaNavigator</span><span class="p">.</span><span class="na">State</span><span class="p">.</span><span class="na">Failure</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// Alert</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="p">.</span><span class="na">launchIn</span><span class="p">(</span><span class="n">scope</span><span class="p">)</span>
+</code></pre></div>
+<p><code>MediaNavigator</code> implementations may provide additional playback properties.</p>
+<h2 id="specializations-of-medianavigator">Specializations of <code>MediaNavigator</code><a class="headerlink" href="#specializations-of-medianavigator" title="Permanent link">&para;</a></h2>
+<h3 id="audio-navigator">Audio Navigator<a class="headerlink" href="#audio-navigator" title="Permanent link">&para;</a></h3>
+<p>The <code>AudioNavigator</code> interface is a specialized version of <code>MediaNavigator</code> for publications based on pre-recorded audio resources, such as audiobooks. It provides additional time-based APIs and properties.</p>
+<div class="highlight"><pre><span></span><code><span class="n">audioNavigator</span><span class="p">.</span><span class="na">playback</span>
+<span class="w">    </span><span class="p">.</span><span class="na">onEach</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">playback</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">        </span><span class="n">print</span><span class="p">(</span><span class="s">"At duration </span><span class="si">${</span><span class="n">playback</span><span class="p">.</span><span class="na">offset</span><span class="si">}</span><span class="s"> in the resource, buffered </span><span class="si">${</span><span class="n">playback</span><span class="p">.</span><span class="na">buffered</span><span class="si">}</span><span class="s">"</span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="p">.</span><span class="na">launchIn</span><span class="p">(</span><span class="n">scope</span><span class="p">)</span>
+
+<span class="c1">// Jump to a particular duration offset in the resource item at index 4.</span>
+<span class="n">audioNavigator</span><span class="p">.</span><span class="na">seek</span><span class="p">(</span><span class="n">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">4</span><span class="p">,</span><span class="w"> </span><span class="n">offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">5.</span><span class="n">seconds</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="text-aware-media-navigator">Text-aware Media Navigator<a class="headerlink" href="#text-aware-media-navigator" title="Permanent link">&para;</a></h3>
+<p><code>TextAwareMediaNavigator</code> specializes <code>MediaNavigator</code> for media-based resources that are synchronized with text utterances, such as sentences. It offers additional APIs and properties to determine which utterances are playing. This interface is helpful for a text-to-speech or a Media overlays navigator.</p>
+<div class="highlight"><pre><span></span><code><span class="n">textAwareNavigator</span><span class="p">.</span><span class="na">playback</span>
+<span class="w">    </span><span class="p">.</span><span class="na">onEach</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">playback</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">        </span><span class="n">print</span><span class="p">(</span><span class="s">"Playing the range </span><span class="si">${</span><span class="n">playback</span><span class="p">.</span><span class="na">range</span><span class="si">}</span><span class="s"> in text </span><span class="si">${</span><span class="n">playback</span><span class="p">.</span><span class="na">utterance</span><span class="si">}</span><span class="s">"</span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="p">.</span><span class="na">launchIn</span><span class="p">(</span><span class="n">scope</span><span class="p">)</span>
+
+<span class="c1">// Get additional context by observing the location instead of the playback.</span>
+<span class="n">textAwareNavigator</span><span class="p">.</span><span class="na">location</span>
+<span class="w">    </span><span class="p">.</span><span class="na">onEach</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">location</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">        </span><span class="c1">// Highlight the portion of text being played.</span>
+<span class="w">        </span><span class="n">visualNavigator</span><span class="p">.</span><span class="na">applyDecorations</span><span class="p">(</span>
+<span class="w">            </span><span class="n">listOf</span><span class="p">(</span><span class="n">Decoration</span><span class="p">(</span>
+<span class="w">                </span><span class="n">locator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">location</span><span class="p">.</span><span class="na">utteranceLocator</span><span class="p">,</span>
+<span class="w">                </span><span class="n">style</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Decoration</span><span class="p">.</span><span class="na">Style</span><span class="p">.</span><span class="na">Highlight</span><span class="p">(</span><span class="n">tint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Color</span><span class="p">.</span><span class="na">RED</span><span class="p">)</span>
+<span class="w">            </span><span class="p">)),</span>
+<span class="w">            </span><span class="s">"highlight"</span>
+<span class="w">        </span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="p">.</span><span class="na">launchIn</span><span class="p">(</span><span class="n">scope</span><span class="p">)</span>
+
+<span class="c1">// Skip the current utterance.</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">textAwareNavigator</span><span class="p">.</span><span class="na">hasNextUtterance</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">textAwareNavigator</span><span class="p">.</span><span class="na">goToNextUtterance</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="background-playback-and-media-notification">Background playback and media notification<a class="headerlink" href="#background-playback-and-media-notification" title="Permanent link">&para;</a></h2>
+<p>The Readium Kotlin toolkit provides implementations of <code>MediaNavigator</code> powered by Jetpack media3. This allows for continuous playback in the background and displaying Media-style notifications with playback controls. </p>
+<p>To accomplish this, you must create your own <code>MediaSessionService</code>. Get acquainted with <a href="https://developer.android.com/guide/topics/media/media3">the concept behind media3</a> first.</p>
+<h3 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h3>
+<p>Add the following <a href="https://developer.android.com/jetpack/androidx/releases/media3">Jetpack media3</a> dependencies to your <code>build.gradle</code>, after checking for the latest version.</p>
+<div class="highlight"><pre><span></span><code><span class="n">dependencies</span><span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="n">implementation</span><span class="w"> </span><span class="s2">"androidx.media3:media3-common:1.0.2"</span>
+<span class="w">    </span><span class="n">implementation</span><span class="w"> </span><span class="s2">"androidx.media3:media3-session:1.0.2"</span>
+<span class="w">    </span><span class="n">implementation</span><span class="w"> </span><span class="s2">"androidx.media3:media3-exoplayer:1.0.2"</span>
+<span class="o">}</span>
+</code></pre></div>
+<h3 id="add-the-mediasessionservice">Add the <code>MediaSessionService</code><a class="headerlink" href="#add-the-mediasessionservice" title="Permanent link">&para;</a></h3>
+<p>Create a new implementation of <code>MediaSessionService</code> in your application. For an example, take a look at <code>MediaService</code> in the Test App. You can access the media3 <code>Player</code> from the navigator with <code>navigator.asMedia3Player()</code>.</p>
+<p>Don't forget to declare this new service in your <code>AndroidManifest.xml</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="nt">&lt;manifest</span><span class="w"> </span><span class="err">...</span><span class="nt">&gt;</span>
+
+<span class="w">    </span><span class="nt">&lt;uses-permission</span><span class="w"> </span><span class="na">android:name=</span><span class="s">"android.permission.FOREGROUND_SERVICE"</span><span class="w"> </span><span class="nt">/&gt;</span>
+<span class="w">    </span><span class="cm">&lt;!-- If targeting Android SDK 34, you will need this permission --&gt;</span>
+<span class="w">    </span><span class="nt">&lt;uses-permission</span><span class="w"> </span><span class="na">android:name=</span><span class="s">"android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"</span><span class="w"> </span><span class="nt">/&gt;</span>
+
+<span class="w">    </span><span class="nt">&lt;application</span><span class="w"> </span><span class="err">...</span><span class="nt">&gt;</span>
+<span class="w">        </span>...
+
+<span class="w">        </span><span class="cm">&lt;!-- Update android:name to match your service package --&gt;</span>
+<span class="w">        </span><span class="nt">&lt;service</span><span class="w"> </span><span class="na">android:name=</span><span class="s">".reader.MediaService"</span><span class="w"> </span>
+<span class="w">            </span><span class="na">android:enabled=</span><span class="s">"true"</span>
+<span class="w">            </span><span class="na">android:exported=</span><span class="s">"true"</span>
+<span class="w">            </span><span class="na">android:foregroundServiceType=</span><span class="s">"mediaPlayback"</span>
+<span class="w">            </span><span class="na">tools:ignore=</span><span class="s">"ExportedSerddvice"</span>
+<span class="w">            </span><span class="nt">&gt;</span>
+
+<span class="w">            </span><span class="nt">&lt;intent-filter&gt;</span>
+<span class="w">                </span><span class="nt">&lt;action</span><span class="w"> </span><span class="na">android:name=</span><span class="s">"androidx.media3.session.MediaSessionService"</span><span class="nt">/&gt;</span>
+<span class="w">                </span><span class="nt">&lt;action</span><span class="w"> </span><span class="na">android:name=</span><span class="s">"androidx.media2.session.MediaSessionService"</span><span class="nt">/&gt;</span>
+<span class="w">                </span><span class="nt">&lt;action</span><span class="w"> </span><span class="na">android:name=</span><span class="s">"android.media.session.MediaSessionService"</span><span class="w"> </span><span class="nt">/&gt;</span>
+<span class="w">            </span><span class="nt">&lt;/intent-filter&gt;</span>
+<span class="w">        </span><span class="nt">&lt;/service&gt;</span>
+<span class="w">    </span><span class="nt">&lt;/application&gt;</span>
+<span class="nt">&lt;/manifest&gt;</span>
+</code></pre></div>
+<h3 id="customizing-the-notification-metadata">Customizing the notification metadata<a class="headerlink" href="#customizing-the-notification-metadata" title="Permanent link">&para;</a></h3>
+<p>By default, the navigators will use the publication's metadata to display playback information in the Media-style notification. If you want to customize this, for example by retrieving metadata from your database, you can provide a custom <code>MediaMetadataFactory</code> implementation when creating the navigator.</p>
+<p>Here's an example for the <code>AndroidTtsNavigator</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">navigatorFactory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AndroidTtsNavigatorFactory</span><span class="p">(</span>
+<span class="w">    </span><span class="n">application</span><span class="p">,</span><span class="w"> </span><span class="n">publication</span><span class="p">,</span>
+<span class="w">    </span><span class="n">metadataProvider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">pub</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">        </span><span class="n">DatabaseMediaMetadataFactory</span><span class="p">(</span>
+<span class="w">            </span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">application</span><span class="p">,</span>
+<span class="w">            </span><span class="n">scope</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">application</span><span class="p">,</span>
+<span class="w">            </span><span class="n">bookId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bookId</span><span class="p">,</span>
+<span class="w">            </span><span class="n">trackCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pub</span><span class="p">.</span><span class="na">readingOrder</span><span class="p">.</span><span class="na">size</span>
+<span class="w">        </span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">)</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Factory of media3 metadata for the local publication with given [bookId].</span>
+<span class="cm"> */</span>
+<span class="kd">class</span><span class="w"> </span><span class="nc">DatabaseMediaMetadataFactory</span><span class="p">(</span>
+<span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="p">:</span><span class="w"> </span><span class="n">Context</span><span class="p">,</span>
+<span class="w">    </span><span class="n">scope</span><span class="p">:</span><span class="w"> </span><span class="n">CoroutineScope</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">bookId</span><span class="p">:</span><span class="w"> </span><span class="kt">Int</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">trackCount</span><span class="p">:</span><span class="w"> </span><span class="kt">Int</span>
+<span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">MediaMetadataFactory</span><span class="w"> </span><span class="p">{</span>
+
+<span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">Metadata</span><span class="p">(</span>
+<span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">title</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span>
+<span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">author</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span>
+<span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">cover</span><span class="p">:</span><span class="w"> </span><span class="n">ByteArray</span>
+<span class="w">    </span><span class="p">)</span>
+
+<span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">metadata</span><span class="p">:</span><span class="w"> </span><span class="n">Deferred</span><span class="o">&lt;</span><span class="n">Metadata?</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">scope</span><span class="p">.</span><span class="na">async</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Database</span><span class="p">.</span><span class="na">getInstance</span><span class="p">(</span><span class="n">context</span><span class="p">).</span><span class="na">bookDao</span><span class="p">().</span><span class="na">get</span><span class="p">(</span><span class="n">bookId</span><span class="p">)</span><span class="o">?.</span><span class="na">let</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">book</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">            </span><span class="n">Metadata</span><span class="p">(</span>
+<span class="w">                </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">book</span><span class="p">.</span><span class="na">title</span><span class="p">,</span>
+<span class="w">                </span><span class="n">author</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">book</span><span class="p">.</span><span class="na">author</span><span class="p">,</span>
+<span class="w">                </span><span class="c1">// Byte arrays will go cross processes and should be kept small</span>
+<span class="w">                </span><span class="n">cover</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">book</span><span class="p">.</span><span class="na">cover</span><span class="p">.</span><span class="na">scaleToFit</span><span class="p">(</span><span class="m">400</span><span class="p">,</span><span class="w"> </span><span class="m">400</span><span class="p">).</span><span class="na">toPng</span><span class="p">()</span>
+<span class="w">            </span><span class="p">)</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">suspend</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">publicationMetadata</span><span class="p">():</span><span class="w"> </span><span class="n">MediaMetadata</span><span class="w"> </span><span class="o">=</span>
+<span class="w">        </span><span class="n">builder</span><span class="p">()</span><span class="o">?.</span><span class="na">build</span><span class="p">()</span><span class="w"> </span><span class="o">?:</span><span class="w"> </span><span class="n">MediaMetadata</span><span class="p">.</span><span class="na">EMPTY</span>
+
+<span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">suspend</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">resourceMetadata</span><span class="p">(</span><span class="n">index</span><span class="p">:</span><span class="w"> </span><span class="kt">Int</span><span class="p">):</span><span class="w"> </span><span class="n">MediaMetadata</span><span class="w"> </span><span class="o">=</span>
+<span class="w">        </span><span class="n">builder</span><span class="p">()</span><span class="o">?.</span><span class="na">setTrackNumber</span><span class="p">(</span><span class="n">index</span><span class="p">)</span><span class="o">?.</span><span class="na">build</span><span class="p">()</span><span class="w"> </span><span class="o">?:</span><span class="w"> </span><span class="n">MediaMetadata</span><span class="p">.</span><span class="na">EMPTY</span>
+
+<span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">suspend</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">builder</span><span class="p">():</span><span class="w"> </span><span class="n">MediaMetadata</span><span class="p">.</span><span class="na">Builder</span><span class="o">?</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">metadata</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">metadata</span><span class="p">.</span><span class="na">await</span><span class="p">()</span><span class="w"> </span><span class="o">?:</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">MediaMetadata</span><span class="p">.</span><span class="na">Builder</span><span class="p">()</span>
+<span class="w">            </span><span class="p">.</span><span class="na">setTitle</span><span class="p">(</span><span class="n">metadata</span><span class="p">.</span><span class="na">title</span><span class="p">)</span>
+<span class="w">            </span><span class="p">.</span><span class="na">setTotalTrackCount</span><span class="p">(</span><span class="n">trackCount</span><span class="p">)</span>
+<span class="w">            </span><span class="p">.</span><span class="na">setArtist</span><span class="p">(</span><span class="n">metadata</span><span class="p">.</span><span class="na">artist</span><span class="p">)</span>
+<span class="w">            </span><span class="c1">// We can't yet directly use a `content://` or `file://` URI with `setArtworkUri`.</span>
+<span class="w">            </span><span class="c1">// See https://github.com/androidx/media/issues/271</span>
+<span class="w">            </span><span class="p">.</span><span class="na">setArtworkData</span><span class="p">(</span><span class="n">metadata</span><span class="p">.</span><span class="na">cover</span><span class="p">,</span><span class="w"> </span><span class="n">PICTURE_TYPE_FRONT_COVER</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 Readium Foundation
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.path"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
