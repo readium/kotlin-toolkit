@@ -246,18 +246,6 @@ internal class R2EpubPageFragment : Fragment() {
 
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? =
                 (webView as? R2BasicWebView)?.shouldInterceptRequest(view, request)
-
-            override fun onRenderProcessGone(
-                view: WebView,
-                detail: RenderProcessGoneDetail,
-            ): Boolean {
-                this@R2EpubPageFragment.webView?.let { wv ->
-                    (wv.parent as? ViewGroup)?.removeView(wv)
-                    wv.destroy()
-                }
-                this@R2EpubPageFragment.webView = null
-                return true
-            }
         }
 
         webView.isHapticFeedbackEnabled = false

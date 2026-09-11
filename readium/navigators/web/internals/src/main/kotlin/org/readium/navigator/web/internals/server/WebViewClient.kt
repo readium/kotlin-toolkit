@@ -22,12 +22,4 @@ public class WebViewClient(
     ): WebResourceResponse? {
         return webViewServer.shouldInterceptRequest(request)
     }
-
-    override fun onRenderProcessGone(
-        view: WebView,
-        detail: RenderProcessGoneDetail,
-    ): Boolean {
-        view.destroy()
-        return true
-    }
 }

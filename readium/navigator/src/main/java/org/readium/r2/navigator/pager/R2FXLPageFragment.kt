@@ -192,16 +192,6 @@ internal class R2FXLPageFragment : Fragment() {
                     webView.listener?.onPageLoaded(webView, link)
                 }
             }
-
-            override fun onRenderProcessGone(
-                view: WebView,
-                detail: RenderProcessGoneDetail,
-            ): Boolean {
-                webViews.remove(view)
-                (view.parent as? ViewGroup)?.removeView(view)
-                view.destroy()
-                return true
-            }
         }
         webView.isHapticFeedbackEnabled = false
         webView.isLongClickable = false
