@@ -84,3 +84,9 @@ The `AssetRetriever` offers an additional constructor that provides greater exte
 * `FormatSniffer` which identifies the file formats that `AssetRetriever` can recognize.
 
 You can use either the default implementations or implement your own for each of these components using the composite pattern. The toolkit's `CompositeResourceFactory`, `CompositeArchiveOpener`, and `CompositeFormatSniffer` provide a simple resolution strategy.
+
+## Accepting publications shared by other apps (side loading)
+
+To let users open publications in your app from a file manager, an email client or a browser download, declare intent filters for the `VIEW` and `SEND` actions on the activity handling imports. The [test app manifest](https://github.com/readium/kotlin-toolkit/blob/develop/test-app/src/main/AndroidManifest.xml) demonstrates a working setup, matching both media types and file extensions.
+
+A word of warning: restrict the `VIEW` filters to the `content` (and legacy `file`) schemes. Declaring the `http`/`https` schemes with a wildcard host will make the Google Play Console flag your app during deep link validation ("Direct links don't work"), as it cannot verify a wildcard domain. These web schemes are unnecessary for side loading, since apps and browsers deliver files through `content://` URIs.
