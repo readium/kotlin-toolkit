@@ -34,7 +34,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewClientCompat
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
@@ -179,12 +178,6 @@ internal class R2EpubPageFragment : Fragment() {
         webView.settings.builtInZoomControls = true
         webView.settings.displayZoomControls = false
         webView.settings.textZoom = textZoom
-        if (WebViewFeature.isFeatureSupported(WebViewFeature.DOWNLOAD_FAVICONS_ENABLED)) {
-            WebSettingsCompat.setDownloadFaviconsEnabled(
-                webView.settings,
-                false
-            )
-        }
         webView.resourceUrl = resourceUrl
         webView.setPadding(0, 0, 0, 0)
         webView.addJavascriptInterface(webView, "Android")
