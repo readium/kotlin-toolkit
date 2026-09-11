@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file. Take a look
 
 ## [Unreleased]
 
+:warning: The minimum supported Android version is now API 24 (Android 7.0).
+
 ### Added
 
 #### Navigator
