@@ -19,12 +19,20 @@ All notable changes to this project will be documented in this file. Take a look
 
 * :warning: The PDFium adapter now defaults to a horizontal paginated layout, instead of a vertical continuous scroll. Set `PdfiumDefaults(scroll = true)` to restore the previous behavior. See [the migration guide](docs/migration-guide.md).
 
+#### LCP
+
+* Opening an LCP publication is no longer delayed by the CRL used to validate its license. The CRL is now downloaded when creating the `LcpService`, and an expired one is refreshed in the background instead of making the user wait for the response.
+
 ### Fixed
 
 #### Navigator
 
 * Fixed the PDFium adapter reporting page positions off by one: `currentLocator` was one page ahead of the visible page, the first page was never reported, and the last page never updated `currentLocator` (contributed by [@huttarl](https://github.com/readium/kotlin-toolkit/pull/812)).
     * :warning: You must migrate the `Locator` objects created by the PDFium adapter and persisted in your database (e.g. bookmarks, reading progression), as their positions were one page too high. Use the new `Publication.migrateLegacyPdfiumLocator()` helper and take a look at [the migration guide](docs/migration-guide.md).
+
+#### LCP
+
+* [#832](https://github.com/readium/kotlin-toolkit/issues/832) The CRL used to validate LCP licenses is now checked to be a genuine X.509 CRL before being cached. Networks with a captive portal (e.g. on a plane) could return their login page with a `200 OK` status, which was then cached for seven days and prevented opening LCP publications. An invalid CRL cached by a previous version is now ignored instead of waiting for its expiration.
 
 #### Shared
 
