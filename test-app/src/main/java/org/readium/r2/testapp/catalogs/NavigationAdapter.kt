@@ -6,6 +6,7 @@
 
 package org.readium.r2.testapp.catalogs
 
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
@@ -15,6 +16,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.catalogs.CatalogFeedListAdapter.Companion.CATALOGFEED
 import org.readium.r2.testapp.data.model.Catalog
 import org.readium.r2.testapp.databinding.ItemRecycleButtonBinding
 
@@ -51,7 +53,9 @@ class NavigationAdapter(val type: Int) :
                     title = link.title!!,
                     type = type
                 )
-                val bundle = bundleOf(CatalogFeedListAdapter.CATALOGFEED to catalog1)
+                val bundle = Bundle().apply {
+                    putParcelable(CATALOGFEED, catalog1)
+                }
                 Navigation.findNavController(it)
                     .navigate(R.id.action_navigation_catalog_self, bundle)
             }
