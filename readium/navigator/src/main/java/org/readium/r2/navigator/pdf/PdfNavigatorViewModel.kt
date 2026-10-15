@@ -32,21 +32,16 @@ internal class PdfNavigatorViewModel<S : Configurable.Settings, P : Configurable
     private val pdfEngineProvider: PdfEngineProvider<S, P, *>,
 ) : AndroidViewModel(application) {
 
-    private val _currentLocator: MutableStateFlow<Locator> =
-        MutableStateFlow(
+    val currentLocator: StateFlow<Locator>
+        field = MutableStateFlow(
             requireNotNull(publication.locatorFromLink(publication.readingOrder.first()))
                 .copy(locations = initialLocations ?: Locator.Locations())
         )
 
-    val currentLocator: StateFlow<Locator> = _currentLocator.asStateFlow()
-
-    private val _settings: MutableStateFlow<S> =
-        MutableStateFlow(computeSettings(initialPreferences))
-
-    val settings: StateFlow<S> = _settings.asStateFlow()
+    val settings: StateFlow<S> field = MutableStateFlow(computeSettings(initialPreferences))
 
     fun submitPreferences(preferences: P) = viewModelScope.launch {
-        _settings.value = computeSettings(preferences)
+        settings.value = computeSettings(preferences)
     }
 
     private fun computeSettings(preferences: P): S =
@@ -54,7 +49,7 @@ internal class PdfNavigatorViewModel<S : Configurable.Settings, P : Configurable
 
     fun onPageChanged(pageIndex: Int) = viewModelScope.launch {
         publication.positions().getOrNull(pageIndex)?.let { locator ->
-            _currentLocator.value = locator
+            currentLocator.value = locator
         }
     }
 

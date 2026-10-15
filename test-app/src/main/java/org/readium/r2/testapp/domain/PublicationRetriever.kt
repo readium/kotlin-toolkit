@@ -9,7 +9,7 @@ package org.readium.r2.testapp.domain
 import android.content.Context
 import android.net.Uri
 import java.io.File
-import java.util.UUID
+import kotlin.uuid.Uuid
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.opds.images
@@ -160,7 +160,7 @@ class PublicationRetriever(
                     return Try.failure(ImportError.Publication(PublicationError(it)))
                 }
 
-        val fileName = "${UUID.randomUUID()}.${actualFormat.fileExtension.value}"
+        val fileName = "${Uuid.random()}.${actualFormat.fileExtension.value}"
         val bookshelfFile = File(bookshelfDir, fileName)
 
         try {

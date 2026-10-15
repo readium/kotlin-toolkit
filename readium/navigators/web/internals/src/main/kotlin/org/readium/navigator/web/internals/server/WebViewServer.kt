@@ -225,8 +225,7 @@ public class WebViewServer(
      * from any origin, including the package domain.
      */
     private fun WebResourceResponse.allowCors() {
-        responseHeaders = responseHeaders ?: mutableMapOf()
-        responseHeaders["Access-Control-Allow-Origin"] = "*"
+        responseHeaders = responseHeaders + mapOf("Access-Control-Allow-Origin" to "*")
     }
 
     private fun errorResource(): Resource =

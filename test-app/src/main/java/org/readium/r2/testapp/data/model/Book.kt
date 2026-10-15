@@ -6,9 +6,9 @@
 
 package org.readium.r2.testapp.data.model
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import androidx.room3.ColumnInfo
+import androidx.room3.Entity
+import androidx.room3.PrimaryKey
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.mediatype.MediaType
 

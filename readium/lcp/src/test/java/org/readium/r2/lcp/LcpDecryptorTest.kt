@@ -12,9 +12,11 @@ import org.readium.r2.shared.util.checkSuccess
 import org.readium.r2.shared.util.resource.InMemoryResource
 import org.readium.r2.shared.util.resource.Resource
 import org.robolectric.ParameterizedRobolectricTestRunner
+import org.robolectric.annotation.Config
 
 @OptIn(ExperimentalStdlibApi::class)
 @RunWith(ParameterizedRobolectricTestRunner::class)
+@Config(sdk = [36])
 class LcpDecryptorTest(val testCase: TestCase) {
 
     data class TestCase(

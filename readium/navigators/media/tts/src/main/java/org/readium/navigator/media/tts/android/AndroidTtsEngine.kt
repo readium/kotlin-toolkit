@@ -257,10 +257,6 @@ public class AndroidTtsEngine private constructor(
     private val coroutineScope: CoroutineScope =
         MainScope()
 
-    private val _settings: MutableStateFlow<AndroidTtsSettings> =
-        MutableStateFlow(settingsResolver.settings(initialPreferences))
-            .apply { engine.setupPitchAndSpeed(value) }
-
     private var utteranceListener: TtsEngine.Listener<Error>? =
         null
 
@@ -270,12 +266,13 @@ public class AndroidTtsEngine private constructor(
     private var isClosed: Boolean =
         false
 
-    override val settings: StateFlow<AndroidTtsSettings> =
-        _settings.asStateFlow()
+    override val settings: StateFlow<AndroidTtsSettings>
+        field = MutableStateFlow(settingsResolver.settings(initialPreferences))
+            .apply { engine.setupPitchAndSpeed(value) }
 
     override fun submitPreferences(preferences: AndroidTtsPreferences) {
         val newSettings = settingsResolver.settings(preferences)
-        _settings.value = newSettings
+        settings.value = newSettings
         (state as? State.EngineAvailable)
             ?.engine?.setupPitchAndSpeed(newSettings)
     }
@@ -369,7 +366,7 @@ public class AndroidTtsEngine private constructor(
     private fun onReconnectionSucceeded(engine: TextToSpeech) {
         val previousState = state as State.WaitingForService
         setupListener(engine)
-        engine.setupPitchAndSpeed(_settings.value)
+        engine.setupPitchAndSpeed(settings.value)
         state = State.EngineAvailable(engine)
         if (isClosed) {
             engine.shutdown()

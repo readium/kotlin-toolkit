@@ -220,7 +220,7 @@ class ReaderViewModel(
     fun search(query: String) = viewModelScope.launch {
         if (query == lastSearchQuery) return@launch
         lastSearchQuery = query
-        _searchLocators.value = emptyList()
+        searchLocators.value = emptyList()
         searchIterator = publication.search(query)
             ?: run {
                 activityChannel.send(
@@ -235,14 +235,13 @@ class ReaderViewModel(
     }
 
     fun cancelSearch() = viewModelScope.launch {
-        _searchLocators.value = emptyList()
+        searchLocators.value = emptyList()
         searchIterator?.close()
         searchIterator = null
         pagingSourceFactory.invalidate()
     }
 
-    val searchLocators: StateFlow<List<Locator>> get() = _searchLocators
-    private var _searchLocators = MutableStateFlow<List<Locator>>(emptyList())
+    val searchLocators: StateFlow<List<Locator>> field = MutableStateFlow<List<Locator>>(emptyList())
 
     /**
      * Maps the current list of search result locators into a list of [Decoration] objects to
@@ -309,7 +308,7 @@ class ReaderViewModel(
         override suspend fun next(): SearchTry<LocatorCollection?> {
             val iterator = searchIterator ?: return Try.success(null)
             return iterator.next().onSuccess {
-                _searchLocators.value += (it?.locators ?: emptyList())
+                searchLocators.value += (it?.locators ?: emptyList())
             }
         }
     }

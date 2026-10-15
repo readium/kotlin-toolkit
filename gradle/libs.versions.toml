@@ -1,56 +1,56 @@
 [versions]
 
 # Keep compatibility with https://kotlinlang.org/docs/multiplatform/multiplatform-compatibility-guide.html#version-compatibility
-kotlin = "2.3.20"
-agp = "9.0.0"
+kotlin = "2.4.20"
+agp = "9.3.1"
 
 desugar_jdk_libs = "2.1.5"
-gradle-maven-publish-plugin = "0.32.0"
+gradle-maven-publish-plugin = "0.37.0"
 
 androidx-activity = "1.13.0"
 androidx-annotation = "1.10.0"
-androidx-appcompat = "1.7.1"
+androidx-appcompat = "1.8.0"
 androidx-browser = "1.10.0"
 androidx-cardview = "1.0.0"
 
 # Keep compatibility with https://kotlinlang.org/docs/multiplatform/compose-compatibility-and-versioning.html#jetpack-compose-artifacts-used
-androidx-compose-animation = "1.10.5"
-androidx-compose-foundation = "1.10.5"
-androidx-compose-material = "1.10.5"
-androidx-compose-runtime = "1.10.5"
-androidx-compose-ui = "1.10.5"
+androidx-compose-animation = "1.12.0"
+androidx-compose-foundation = "1.12.0"
+androidx-compose-material = "1.12.0"
+androidx-compose-runtime = "1.12.0"
+androidx-compose-ui = "1.12.0"
 
 androidx-compose-material3 = "1.4.0"
-androidx-constraintlayout = "2.2.1"
-androidx-core = "1.18.0"
+androidx-constraintlayout = "2.2.2"
+androidx-core = "1.19.0"
 androidx-datastore = "1.2.1"
-androidx-fragment-ktx = "1.8.9"
+androidx-fragment-ktx = "1.9.0"
 androidx-legacy = "1.0.0"
-androidx-lifecycle = "2.10.0"
-androidx-media3 = "1.10.0"
-androidx-navigation = "2.9.7"
-androidx-paging = "3.4.2"
+androidx-lifecycle = "2.11.0"
+androidx-media3 = "1.11.0"
+androidx-navigation = "2.10.0"
+androidx-paging = "3.5.1"
 androidx-recyclerview = "1.4.0"
-androidx-room = "2.8.4"
+androidx-room3 = "3.0.2"
 androidx-viewpager2 = "1.1.0"
-androidx-webkit = "1.15.0"
+androidx-webkit = "1.17.0"
 
 assertj = "3.27.7"
 
 dokka = "2.2.0"
 
-google-material = "1.13.0"
+google-material = "1.14.0"
 
-jsoup = "1.22.2"
+jsoup = "1.23.2"
 junit = "4.13.2"
 
-kotlinx-coroutines = "1.10.2"
-kotlinx-coroutines-test = "1.10.2"
-kotlinx-datetime = "0.7.1"
-kotlinx-serialization-json = "1.10.0"
-kotlinx-collections-immutable = "0.4.0"
+kotlinx-coroutines = "1.11.0"
+kotlinx-coroutines-test = "1.11.0"
+kotlinx-datetime = "0.8.0"
+kotlinx-serialization-json = "1.11.0"
+kotlinx-collections-immutable = "0.5.2"
 
-ksp = "2.3.4"
+ksp = "2.3.9"
 
 ktlint = "14.2.0"
 
@@ -62,7 +62,7 @@ picasso = "2.8"
 pspdfkit = "8.4.1"
 
 robolectric = "4.16.1"
-mockk = "1.14.9"
+mockk = "1.14.11"
 
 timber = "5.0.1"
 
@@ -95,9 +95,8 @@ androidx-navigation-fragment = { group = "androidx.navigation", name = "navigati
 androidx-navigation-ui = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "androidx-navigation" }
 androidx-paging = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref = "androidx-paging" }
 androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "androidx-recyclerview" }
-androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "androidx-room" }
-androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "androidx-room" }
-androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "androidx-room" }
+androidx-room3 = { group = "androidx.room3", name = "room3-runtime", version.ref = "androidx-room3" }
+androidx-room3-compiler = { group = "androidx.room3", name = "room3-compiler", version.ref = "androidx-room3" }
 androidx-viewpager2 = { group = "androidx.viewpager2", name = "viewpager2", version.ref = "androidx-viewpager2" }
 androidx-webkit = { group = "androidx.webkit", name = "webkit", version.ref = "androidx-webkit" }
 
@@ -136,13 +135,13 @@ plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref
 
 [plugins]
 
+androidx-room3 = { id = "androidx.room3", version.ref = "androidx-room3" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
 [bundles]
 
 compose = ["androidx-compose-activity", "androidx-compose-animation", "androidx-compose-foundation", "androidx-compose-material", "androidx-compose-material3", "androidx-compose-runtime", "androidx-compose-ui", "androidx-compose-ui-tooling"]
 media3 = ["androidx-media3-session", "androidx-media3-common", "androidx-media3-exoplayer"]
-room = ["androidx-room-runtime", "androidx-room-ktx"]

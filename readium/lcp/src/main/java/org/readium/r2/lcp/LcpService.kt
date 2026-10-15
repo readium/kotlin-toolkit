@@ -11,6 +11,9 @@ package org.readium.r2.lcp
 
 import android.content.Context
 import java.io.File
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import org.readium.r2.lcp.auth.LcpDialogAuthentication
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.persistence.LcpDatabase
@@ -162,7 +165,14 @@ public interface LcpService {
                 httpClient = httpClient,
                 context = context
             )
-            val crl = CRLService(httpClient = httpClient, context = context)
+            val crl = CRLService(
+                httpClient = httpClient,
+                context = context,
+                coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+            )
+            // Warms up the CRL cache, so that opening the first publication is not delayed by it.
+            crl.preload()
+
             val passphrases = PassphrasesService(repository = passphraseRepository)
             return LicensesService(
                 licenses = licenseRepository,

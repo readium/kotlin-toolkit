@@ -7,10 +7,10 @@
 package org.readium.r2.testapp.data.db
 
 import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
+import androidx.room3.ColumnTypeConverters
+import androidx.room3.Database
+import androidx.room3.Room
+import androidx.room3.RoomDatabase
 import org.readium.r2.testapp.data.model.*
 import org.readium.r2.testapp.data.model.Book
 import org.readium.r2.testapp.data.model.Bookmark
@@ -22,7 +22,7 @@ import org.readium.r2.testapp.data.model.Highlight
     version = 1,
     exportSchema = false
 )
-@TypeConverters(
+@ColumnTypeConverters(
     HighlightConverters::class
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -41,9 +41,8 @@ abstract class AppDatabase : RoomDatabase() {
                 return tempInstance
             }
             synchronized(this) {
-                val instance = Room.databaseBuilder(
+                val instance = Room.databaseBuilder<AppDatabase>(
                     context.applicationContext,
-                    AppDatabase::class.java,
                     "database"
                 ).build()
                 INSTANCE = instance

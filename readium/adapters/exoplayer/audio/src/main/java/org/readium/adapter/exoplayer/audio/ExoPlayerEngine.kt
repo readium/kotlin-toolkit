@@ -178,7 +178,7 @@ public class ExoPlayerEngine private constructor(
         }
 
         override fun onEvents(player: Player, events: Player.Events) {
-            _playback.value = exoPlayer.playback
+            playback.value = exoPlayer.playback
         }
     }
 
@@ -201,12 +201,6 @@ public class ExoPlayerEngine private constructor(
         exoPlayer.addListener(Listener())
     }
 
-    private val _settings: MutableStateFlow<ExoPlayerSettings> =
-        MutableStateFlow(settingsResolver.settings(initialPreferences))
-
-    private val _playback: MutableStateFlow<AudioEngine.Playback> =
-        MutableStateFlow(exoPlayer.playback)
-
     private val sessionPlayer = object :
         ForwardingPlayer(exoPlayer) {
 
@@ -228,7 +222,7 @@ public class ExoPlayerEngine private constructor(
             val positionRefreshDelay = (1.0 / configuration.positionRefreshRate.value).seconds
             while (isActive) {
                 delay(positionRefreshDelay)
-                _playback.value = exoPlayer.playback
+                playback.value = exoPlayer.playback
             }
         }
 
@@ -236,10 +230,10 @@ public class ExoPlayerEngine private constructor(
     }
 
     override val playback: StateFlow<AudioEngine.Playback>
-        get() = _playback.asStateFlow()
+        field = MutableStateFlow(exoPlayer.playback)
 
     override val settings: StateFlow<ExoPlayerSettings>
-        get() = _settings.asStateFlow()
+        field = MutableStateFlow(settingsResolver.settings(initialPreferences))
 
     override fun play() {
         exoPlayer.play()

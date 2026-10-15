@@ -277,6 +277,7 @@ public fun JSONObject.optStringsFromArrayOrSingle(name: String, remove: Boolean 
     return when (value) {
         is JSONArray -> value.toList().filterIsInstance(String::class.java)
         is String -> listOf(value)
+        null -> emptyList()
         else -> emptyList()
     }
 }

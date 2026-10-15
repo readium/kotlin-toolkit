@@ -16,7 +16,7 @@ android {
 
 kotlin {
     compilerOptions {
-        languageVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_3
+        languageVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_4
         // See https://github.com/readium/kotlin-toolkit/pull/525#issuecomment-2300084041
         freeCompilerArgs.add("-Xconsistent-data-class-copy-visibility")
     }
@@ -35,8 +35,8 @@ dependencies {
     implementation(libs.kotlinx.datetime)
     implementation(libs.kotlinx.serialization.json)
 
-    implementation(libs.bundles.room)
-    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room3)
+    ksp(libs.androidx.room3.compiler)
 
     // Tests
     testImplementation(libs.junit)

@@ -10,6 +10,7 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Timeline
 import java.util.*
+import kotlin.uuid.Uuid
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 internal class TtsTimeline(
@@ -17,7 +18,7 @@ internal class TtsTimeline(
 ) : Timeline() {
 
     private val uuids = mediaItems.indices
-        .map { UUID.randomUUID() }
+        .map { Uuid.random() }
 
     override fun getWindowCount(): Int {
         return mediaItems.size

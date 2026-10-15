@@ -10,11 +10,12 @@
 package org.readium.r2.lcp.persistence
 
 import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.room3.Database
+import androidx.room3.Room
+import androidx.room3.RoomDatabase
+import androidx.room3.migration.Migration
+import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.execSQL
 
 @Database(
     entities = [Passphrase::class, License::class],
@@ -35,8 +36,8 @@ internal abstract class LcpDatabase : RoomDatabase() {
                 return tempInstance
             }
             val MIGRATION_1_2 = object : Migration(1, 2) {
-                override fun migrate(db: SupportSQLiteDatabase) {
-                    db.execSQL(
+                override suspend fun migrate(connection: SQLiteConnection) {
+                    connection.execSQL(
                         """
                 CREATE TABLE passphrases (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -47,15 +48,15 @@ internal abstract class LcpDatabase : RoomDatabase() {
                 )
                         """.trimIndent()
                     )
-                    db.execSQL(
+                    connection.execSQL(
                         """
                 INSERT INTO passphrases (license_id, provider, user_id, passphrase)
                 SELECT id, origin, userId, passphrase FROM Transactions
                         """.trimIndent()
                     )
-                    db.execSQL("DROP TABLE Transactions")
+                    connection.execSQL("DROP TABLE Transactions")
 
-                    db.execSQL(
+                    connection.execSQL(
                         """
                 CREATE TABLE new_Licenses (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -66,20 +67,19 @@ internal abstract class LcpDatabase : RoomDatabase() {
                 )
                         """.trimIndent()
                     )
-                    db.execSQL(
+                    connection.execSQL(
                         """
                 INSERT INTO new_Licenses (license_id, right_print, right_copy, registered)
                 SELECT id, printsLeft, copiesLeft, registered FROM Licenses
                         """.trimIndent()
                     )
-                    db.execSQL("DROP TABLE Licenses")
-                    db.execSQL("ALTER TABLE new_Licenses RENAME TO licenses")
+                    connection.execSQL("DROP TABLE Licenses")
+                    connection.execSQL("ALTER TABLE new_Licenses RENAME TO licenses")
                 }
             }
             synchronized(this) {
-                val instance = Room.databaseBuilder(
+                val instance = Room.databaseBuilder<LcpDatabase>(
                     context.applicationContext,
-                    LcpDatabase::class.java,
                     "lcpdatabase"
                 ).addMigrations(MIGRATION_1_2).build()
                 INSTANCE = instance

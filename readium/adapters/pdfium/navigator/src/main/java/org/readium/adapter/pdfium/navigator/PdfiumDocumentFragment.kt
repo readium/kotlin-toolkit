@@ -93,7 +93,7 @@ public class PdfiumDocumentFragment internal constructor(
 
     private lateinit var resetJob: SingleJob
 
-    private fun reset(pageIndex: Int = _pageIndex.value) {
+    private fun reset(pageIndex: Int = this.pageIndex.value) {
         if (view == null) return
         val context = context?.applicationContext ?: return
 
@@ -140,7 +140,7 @@ public class PdfiumDocumentFragment internal constructor(
                     }
                 }
                 .onPageChange { index, _ ->
-                    _pageIndex.value = convertPageIndexFromView(index)
+                    this@PdfiumDocumentFragment.pageIndex.value = convertPageIndexFromView(index)
                 }
                 .onTap { event ->
                     listener?.onTap(PointF(event.x, event.y)) ?: false
@@ -151,8 +151,8 @@ public class PdfiumDocumentFragment internal constructor(
 
     private var pageCount = 0
 
-    private val _pageIndex = MutableStateFlow(initialPageIndex)
-    override val pageIndex: StateFlow<Int> = _pageIndex.asStateFlow()
+    override val pageIndex: StateFlow<Int>
+        field = MutableStateFlow(initialPageIndex)
 
     override fun goToPageIndex(index: Int, animated: Boolean): Boolean {
         if (!isValidPageIndex(index)) {

@@ -32,11 +32,11 @@ public class ListWarningLogger : WarningLogger {
     /**
      * The list of accumulated [Warning]s.
      */
-    public val warnings: List<Warning> get() = _warnings
-    private val _warnings = mutableListOf<Warning>()
+    public val warnings: List<Warning>
+        field: MutableList<Warning> = mutableListOf()
 
     override fun log(warning: Warning) {
-        _warnings.add(warning)
+        warnings.add(warning)
     }
 }
 

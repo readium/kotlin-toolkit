@@ -81,11 +81,10 @@ internal class EpubNavigatorViewModel(
     private val settingsPolicy: EpubSettingsResolver =
         EpubSettingsResolver(publication.metadata, defaults)
 
-    private val _settings: MutableStateFlow<EpubSettings> =
-        MutableStateFlow(settingsPolicy.settings(initialPreferences))
-    val settings: StateFlow<EpubSettings> = _settings.asStateFlow()
+    val settings: StateFlow<EpubSettings>
+        field = MutableStateFlow(settingsPolicy.settings(initialPreferences))
 
-    val overflow: StateFlow<OverflowableNavigator.Overflow> = _settings
+    val overflow: StateFlow<OverflowableNavigator.Overflow> = settings
         .mapStateIn(viewModelScope) { settings ->
             SimpleOverflow(
                 readingProgression = settings.readingProgression,
@@ -214,7 +213,7 @@ internal class EpubNavigatorViewModel(
         val oldSettings = settings.value
 
         val newSettings = settingsPolicy.settings(preferences)
-        _settings.value = newSettings
+        settings.value = newSettings
         css.update { it.update(newSettings, useReadiumCssFontSize = config.useReadiumCssFontSize) }
 
         val needsInvalidation: Boolean = (

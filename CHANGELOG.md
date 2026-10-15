@@ -4,7 +4,11 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-## [Unreleased]
+<!-- ## [Unreleased] -->
+
+## [3.4.0] - 2026-09-11
+
+:warning: The minimum supported Android version is now API 24 (Android 7.0).
 
 ### Added
 
@@ -23,12 +27,20 @@ All notable changes to this project will be documented in this file. Take a look
 
 * :warning: The PDFium adapter now defaults to a horizontal paginated layout, instead of a vertical continuous scroll. Set `PdfiumDefaults(scroll = true)` to restore the previous behavior. See [the migration guide](docs/migration-guide.md).
 
+#### LCP
+
+* Opening an LCP publication is no longer delayed by the CRL used to validate its license. The CRL is now downloaded when creating the `LcpService`, and an expired one is refreshed in the background instead of making the user wait for the response.
+
 ### Fixed
 
 #### Navigator
 
 * Fixed the PDFium adapter reporting page positions off by one: `currentLocator` was one page ahead of the visible page, the first page was never reported, and the last page never updated `currentLocator` (contributed by [@huttarl](https://github.com/readium/kotlin-toolkit/pull/812)).
     * :warning: You must migrate the `Locator` objects created by the PDFium adapter and persisted in your database (e.g. bookmarks, reading progression), as their positions were one page too high. Use the new `Publication.migrateLegacyPdfiumLocator()` helper and take a look at [the migration guide](docs/migration-guide.md).
+
+#### LCP
+
+* [#832](https://github.com/readium/kotlin-toolkit/issues/832) The CRL used to validate LCP licenses is now checked to be a genuine X.509 CRL before being cached. Networks with a captive portal (e.g. on a plane) could return their login page with a `200 OK` status, which was then cached for seven days and prevented opening LCP publications. An invalid CRL cached by a previous version is now ignored instead of waiting for its expiration.
 
 #### Shared
 
@@ -1075,3 +1087,4 @@ progression. Now if no reading progression is set, the `effectiveReadingProgress
 [3.1.2]: https://github.com/readium/kotlin-toolkit/compare/3.1.1...3.1.2
 [3.2.0]: https://github.com/readium/kotlin-toolkit/compare/3.1.2...3.2.0
 [3.3.0]: https://github.com/readium/kotlin-toolkit/compare/3.2.0...3.3.0
+[3.4.0]: https://github.com/readium/kotlin-toolkit/compare/3.3.0...3.4.0

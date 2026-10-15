@@ -69,11 +69,11 @@ public class ImageNavigatorFragment private constructor(
     internal lateinit var adapter: R2PagerAdapter
     private lateinit var currentActivity: FragmentActivity
 
-    override val currentLocator: StateFlow<Locator> get() = _currentLocator
-    private val _currentLocator = MutableStateFlow(
-        initialLocator?.let { publication.normalizeLocator(it) }
-            ?: requireNotNull(publication.locatorFromLink(publication.readingOrder.first()))
-    )
+    override val currentLocator: StateFlow<Locator>
+        field = MutableStateFlow(
+            initialLocator?.let { publication.normalizeLocator(it) }
+                ?: requireNotNull(publication.locatorFromLink(publication.readingOrder.first()))
+        )
 
     private var currentPagerPosition: Int = 0
     internal var resources: List<String> = emptyList()
@@ -160,10 +160,10 @@ public class ImageNavigatorFragment private constructor(
 
     private fun notifyCurrentLocation() {
         val locator = positions.getOrNull(resourcePager.currentItem)
-            ?.takeUnless { it == _currentLocator.value }
+            ?.takeUnless { it == currentLocator.value }
             ?: return
 
-        _currentLocator.value = locator
+        currentLocator.value = locator
     }
 
     override fun go(locator: Locator, animated: Boolean): Boolean {

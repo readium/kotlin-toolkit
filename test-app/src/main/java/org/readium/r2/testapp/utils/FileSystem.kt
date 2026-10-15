@@ -4,7 +4,7 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
-import java.util.UUID
+import kotlin.uuid.Uuid
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.util.Try
@@ -50,7 +50,7 @@ suspend fun InputStream.toFileUnsafe(file: File) {
  * Copies the content of this [InputStream] to a new file in [dir].
  */
 suspend fun InputStream.copyToNewFile(dir: File): Try<File, FileSystemError> {
-    val filename = UUID.randomUUID().toString()
+    val filename = Uuid.random().toString()
     val file = File(dir, filename)
     return toFile(file).map { file }
 }

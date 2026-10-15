@@ -15,7 +15,12 @@ import android.annotation.SuppressLint
 import android.graphics.PointF
 import android.os.Bundle
 import android.util.DisplayMetrics
-import android.view.*
+import android.view.KeyEvent
+import android.view.LayoutInflater
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
@@ -34,7 +39,10 @@ import androidx.webkit.WebViewFeature
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.math.roundToInt
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
@@ -76,7 +84,6 @@ internal class R2EpubPageFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var isLoading: Boolean = false
-    private val _isLoaded = MutableStateFlow(false)
 
     internal fun setFontSize(fontSize: Double) {
         textZoom = (fontSize * 100).roundToInt()
@@ -93,7 +100,7 @@ internal class R2EpubPageFragment : Fragment() {
      */
     @InternalReadiumApi
     val isLoaded: StateFlow<Boolean>
-        get() = _isLoaded.asStateFlow()
+        field = MutableStateFlow(false)
 
     /**
      * Waits for the page to be loaded.
@@ -241,7 +248,7 @@ internal class R2EpubPageFragment : Fragment() {
 
         resourceUrl?.let {
             isLoading = true
-            _isLoaded.value = false
+            isLoaded.value = false
             webView.loadUrl(it.toString())
         }
 
@@ -392,7 +399,7 @@ internal class R2EpubPageFragment : Fragment() {
     private fun onLoadPage() {
         if (!isLoading) return
         isLoading = false
-        _isLoaded.value = true
+        isLoaded.value = true
 
         if (view == null) return
 
