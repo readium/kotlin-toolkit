@@ -12,6 +12,7 @@ import java.nio.charset.Charset
 import kotlin.time.Instant
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
@@ -175,23 +176,48 @@ internal object LicenseDocumentSerializer : KSerializer<LicenseDocument> {
 
         val encryptionJson = jsonElement["encryption"] as? JsonObject
             ?: throw LcpException(LcpError.Parsing.LicenseDocument)
-        val encryption = LcpJson.decodeFromJsonElement(Encryption.serializer(), encryptionJson)
+        val encryption = try {
+            LcpJson.decodeFromJsonElement(Encryption.serializer(), encryptionJson)
+        } catch (e: SerializationException) {
+            Timber.e(e, "Failed to decode encryption")
+            throw LcpException(LcpError.Parsing.Encryption)
+        }
 
         val linksJson = jsonElement["links"] as? JsonArray
             ?: throw LcpException(LcpError.Parsing.LicenseDocument)
-        val links = LcpJson.decodeFromJsonElement(Links.serializer(), linksJson)
+        val links = try {
+            LcpJson.decodeFromJsonElement(Links.serializer(), linksJson)
+        } catch (e: SerializationException) {
+            Timber.e(e, "Failed to decode links")
+            throw LcpException(LcpError.Parsing.Link)
+        }
 
         val user = jsonElement["user"]?.let {
-            LcpJson.decodeFromJsonElement(User.serializer(), it)
+            try {
+                LcpJson.decodeFromJsonElement(User.serializer(), it)
+            } catch (e: SerializationException) {
+                Timber.w(e, "Failed to decode user, falling back to default")
+                User()
+            }
         } ?: User()
 
         val rights = jsonElement["rights"]?.let {
-            LcpJson.decodeFromJsonElement(Rights.serializer(), it)
+            try {
+                LcpJson.decodeFromJsonElement(Rights.serializer(), it)
+            } catch (e: SerializationException) {
+                Timber.w(e, "Failed to decode rights, falling back to default")
+                Rights()
+            }
         } ?: Rights()
 
         val signatureJson = jsonElement["signature"] as? JsonObject
             ?: throw LcpException(LcpError.Parsing.LicenseDocument)
-        val signature = LcpJson.decodeFromJsonElement(Signature.serializer(), signatureJson)
+        val signature = try {
+            LcpJson.decodeFromJsonElement(Signature.serializer(), signatureJson)
+        } catch (e: SerializationException) {
+            Timber.e(e, "Failed to decode signature")
+            throw LcpException(LcpError.Parsing.Signature)
+        }
 
         return LicenseDocument(
             provider = provider,

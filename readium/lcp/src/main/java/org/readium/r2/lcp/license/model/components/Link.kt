@@ -4,12 +4,11 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:OptIn(InternalReadiumApi::class)
-
 package org.readium.r2.lcp.license.model.components
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
@@ -23,9 +22,6 @@ import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
-import org.readium.r2.lcp.LcpError
-import org.readium.r2.lcp.LcpException
-import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -58,10 +54,11 @@ public object LinkSerializer : KSerializer<Link> {
         val jsonObject = input.decodeJsonElement() as JsonObject
 
         val hrefStr = jsonObject["href"]?.jsonPrimitive?.contentOrNull
-            ?: throw LcpException(LcpError.Parsing.Link)
+            ?: throw SerializationException("Invalid Link: missing href")
 
         val templated = jsonObject["templated"]?.jsonPrimitive?.booleanOrNull ?: false
-        val href = Href(hrefStr, templated) ?: throw LcpException(LcpError.Parsing.Link)
+        val href = Href(hrefStr, templated)
+            ?: throw SerializationException("Invalid Link: invalid href $hrefStr")
 
         val mediaType = jsonObject["type"]?.jsonPrimitive?.contentOrNull?.let { MediaType(it) }
         val title = jsonObject["title"]?.jsonPrimitive?.contentOrNull
@@ -71,7 +68,7 @@ public object LinkSerializer : KSerializer<Link> {
             is JsonPrimitive -> setOf(relElement.content)
             is JsonArray -> relElement.map { it.jsonPrimitive.content }.toSet()
             else -> emptySet()
-        }.takeIf { it.isNotEmpty() } ?: throw LcpException(LcpError.Parsing.Link)
+        }.takeIf { it.isNotEmpty() } ?: throw SerializationException("Invalid Link: missing rel")
 
         val profile = jsonObject["profile"]?.jsonPrimitive?.contentOrNull
         val length = jsonObject["length"]?.jsonPrimitive?.intOrNull

@@ -11,6 +11,7 @@ package org.readium.r2.lcp.license.model
 import kotlin.time.Instant
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
@@ -32,6 +33,7 @@ import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.toInstant
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
+import timber.log.Timber
 
 @Serializable(with = StatusDocumentSerializer::class)
 public class StatusDocument(
@@ -157,7 +159,12 @@ internal object StatusDocumentSerializer : KSerializer<StatusDocument> {
 
         val linksJson = jsonElement["links"] as? JsonArray
             ?: throw LcpException(LcpError.Parsing.StatusDocument)
-        val links = LcpJson.decodeFromJsonElement(Links.serializer(), linksJson)
+        val links = try {
+            LcpJson.decodeFromJsonElement(Links.serializer(), linksJson)
+        } catch (e: SerializationException) {
+            Timber.e(e, "Failed to decode links")
+            throw LcpException(LcpError.Parsing.Link)
+        }
 
         val potentialRights = jsonElement["potential_rights"]?.let {
             LcpJson.decodeFromJsonElement(PotentialRights.serializer(), it)
