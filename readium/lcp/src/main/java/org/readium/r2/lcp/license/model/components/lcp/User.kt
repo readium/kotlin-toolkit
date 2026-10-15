@@ -9,7 +9,6 @@ package org.readium.r2.lcp.license.model.components.lcp
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonArray
@@ -23,6 +22,9 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import org.json.JSONObject
 import org.readium.r2.lcp.license.model.LcpJson
+import org.readium.r2.shared.extensibility.MapValue
+import org.readium.r2.shared.extensibility.toJsonObject
+import org.readium.r2.shared.extensibility.toMapValue
 
 @Serializable(with = UserSerializer::class)
 public data class User(
@@ -30,7 +32,7 @@ public data class User(
     val email: String? = null,
     val name: String? = null,
     val encrypted: List<String> = emptyList(),
-    val extensions: JsonObject = JsonObject(emptyMap()),
+    val extensions: MapValue = MapValue(),
 ) {
     @Deprecated("Use kotlinx.serialization to serialize the object")
     val json: JSONObject get() = JSONObject(LcpJson.encodeToString(this))
@@ -56,7 +58,7 @@ internal object UserSerializer : KSerializer<User> {
             email = email,
             name = name,
             encrypted = encrypted,
-            extensions = JsonObject(extensionsMap)
+            extensions = JsonObject(extensionsMap).toMapValue()
         )
     }
 
@@ -69,7 +71,7 @@ internal object UserSerializer : KSerializer<User> {
         if (value.encrypted.isNotEmpty()) {
             map["encrypted"] = JsonArray(value.encrypted.map { JsonPrimitive(it) })
         }
-        map.putAll(value.extensions)
+        map.putAll(value.extensions.toJsonObject())
         output.encodeJsonElement(JsonObject(map))
     }
 }

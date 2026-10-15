@@ -12,7 +12,6 @@ import kotlin.time.Instant
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonDecoder
@@ -26,6 +25,9 @@ import kotlinx.serialization.json.jsonPrimitive
 import org.json.JSONObject
 import org.readium.r2.lcp.license.model.LcpJson
 import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.extensibility.MapValue
+import org.readium.r2.shared.extensibility.toJsonObject
+import org.readium.r2.shared.extensibility.toMapValue
 import org.readium.r2.shared.extensions.toInstant
 
 @Serializable(with = RightsSerializer::class)
@@ -34,7 +36,7 @@ public data class Rights(
     val copy: Int? = null,
     val start: Instant? = null,
     val end: Instant? = null,
-    val extensions: JsonObject = JsonObject(emptyMap()),
+    val extensions: MapValue = MapValue(),
 ) {
     @Deprecated("Use kotlinx.serialization to serialize the object")
     val json: JSONObject get() = JSONObject(LcpJson.encodeToString(this))
@@ -58,7 +60,7 @@ internal object RightsSerializer : KSerializer<Rights> {
             copy = copy,
             start = start,
             end = end,
-            extensions = JsonObject(extensionsMap)
+            extensions = JsonObject(extensionsMap).toMapValue()
         )
     }
 
@@ -69,7 +71,7 @@ internal object RightsSerializer : KSerializer<Rights> {
         value.copy?.let { map["copy"] = JsonPrimitive(it) }
         value.start?.let { map["start"] = JsonPrimitive(it.toString()) }
         value.end?.let { map["end"] = JsonPrimitive(it.toString()) }
-        map.putAll(value.extensions)
+        map.putAll(value.extensions.toJsonObject())
         output.encodeJsonElement(JsonObject(map))
     }
 }
