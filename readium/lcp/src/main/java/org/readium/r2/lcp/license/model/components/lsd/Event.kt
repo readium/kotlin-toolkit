@@ -21,11 +21,11 @@ import org.readium.r2.shared.util.KotlinInstantSerializer
 @Serializable
 public data class Event(
     @SerialName("type")
-    val type: String = "",
+    val type: String? = null,
     @SerialName("name")
-    val name: String = "",
+    val name: String? = null,
     @SerialName("id")
-    val id: String = "",
+    val id: String? = null,
     @SerialName("timestamp")
     @Serializable(with = KotlinInstantSerializer::class)
     val date: Instant? = null,
