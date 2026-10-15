@@ -12,6 +12,7 @@ import kotlin.time.Instant
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
@@ -25,7 +26,9 @@ import org.json.JSONObject
 import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.components.Link
-import org.readium.r2.lcp.license.model.components.Links
+import org.readium.r2.lcp.license.model.components.allWithRel
+import org.readium.r2.lcp.license.model.components.firstWithRel
+import org.readium.r2.lcp.license.model.components.firstWithRelAndNoType
 import org.readium.r2.lcp.license.model.components.lsd.Event
 import org.readium.r2.lcp.license.model.components.lsd.PotentialRights
 import org.readium.r2.lcp.service.URLParameters
@@ -42,7 +45,7 @@ public class StatusDocument(
     public val message: String,
     public val licenseUpdated: Instant,
     public val statusUpdated: Instant,
-    public val links: Links,
+    public val links: List<Link>,
     public val potentialRights: PotentialRights?,
     public val events: List<Event>,
     public val jsonString: String,
@@ -160,7 +163,7 @@ internal object StatusDocumentSerializer : KSerializer<StatusDocument> {
         val linksJson = jsonElement["links"] as? JsonArray
             ?: throw LcpException(LcpError.Parsing.StatusDocument)
         val links = try {
-            LcpJson.decodeFromJsonElement(Links.serializer(), linksJson)
+            LcpJson.decodeFromJsonElement(ListSerializer(Link.serializer()), linksJson)
         } catch (e: SerializationException) {
             Timber.e(e, "Failed to decode links")
             throw LcpException(LcpError.Parsing.Link)

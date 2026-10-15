@@ -46,6 +46,18 @@ public data class Link(
     ): Url = href.resolve(parameters = parameters)
 }
 
+public fun List<Link>.firstWithRel(rel: String, type: MediaType? = null): Link? =
+    firstOrNull { it.matches(rel, type) }
+
+internal fun List<Link>.firstWithRelAndNoType(rel: String): Link? =
+    firstOrNull { it.rels.contains(rel) && it.mediaType == null }
+
+public fun List<Link>.allWithRel(rel: String, type: MediaType? = null): List<Link> =
+    filter { it.matches(rel, type) }
+
+private fun Link.matches(rel: String, mediaType: MediaType?): Boolean =
+    this.rels.contains(rel) && (mediaType?.matches(this.mediaType) ?: true)
+
 public object LinkSerializer : KSerializer<Link> {
     override val descriptor: SerialDescriptor = JsonObject.serializer().descriptor
 
