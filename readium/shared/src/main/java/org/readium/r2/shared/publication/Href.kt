@@ -13,6 +13,7 @@ import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -159,7 +160,7 @@ public object HrefSerializer : KSerializer<Href> {
 
     override fun deserialize(decoder: Decoder): Href {
         val string = decoder.decodeString()
-        return Href(string) ?: throw IllegalArgumentException("Invalid Href: $string")
+        return Href(string) ?: throw SerializationException("Invalid Href: $string")
     }
 
     override fun serialize(encoder: Encoder, value: Href) {

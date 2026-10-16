@@ -63,7 +63,8 @@ public object LinkSerializer : KSerializer<Link> {
 
     override fun deserialize(decoder: Decoder): Link {
         val input = decoder as JsonDecoder
-        val jsonObject = input.decodeJsonElement() as JsonObject
+        val jsonObject = input.decodeJsonElement() as? JsonObject
+            ?: throw SerializationException("Expected JsonObject for Link")
 
         val hrefStr = jsonObject["href"]?.jsonPrimitive?.contentOrNull
             ?: throw SerializationException("Invalid Link: missing href")

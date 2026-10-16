@@ -11,6 +11,7 @@ package org.readium.r2.lcp.license.model.components.lcp
 import kotlin.time.Instant
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
@@ -47,7 +48,8 @@ internal object RightsSerializer : KSerializer<Rights> {
 
     override fun deserialize(decoder: Decoder): Rights {
         val input = decoder as JsonDecoder
-        val jsonObject = input.decodeJsonElement() as JsonObject
+        val jsonObject = input.decodeJsonElement() as? JsonObject
+            ?: throw SerializationException("Expected JsonObject for Rights")
         val print = jsonObject["print"]?.jsonPrimitive?.intOrNull
         val copy = jsonObject["copy"]?.jsonPrimitive?.intOrNull
         val start = jsonObject["start"]?.jsonPrimitive?.contentOrNull?.toInstant()

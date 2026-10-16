@@ -10,6 +10,7 @@ package org.readium.r2.shared.util
 
 import kotlin.time.Instant
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -26,7 +27,7 @@ public object KotlinInstantSerializer : KSerializer<Instant> {
 
     override fun deserialize(decoder: Decoder): Instant {
         val string = decoder.decodeString()
-        return string.toInstant() ?: throw IllegalArgumentException("Invalid Instant: $string")
+        return string.toInstant() ?: throw SerializationException("Invalid Instant: $string")
     }
 
     override fun serialize(encoder: Encoder, value: Instant) {

@@ -10,6 +10,7 @@ package org.readium.r2.lcp.license.model.components.lcp
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
@@ -20,7 +21,6 @@ import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import org.json.JSONObject
 import org.readium.r2.lcp.license.model.LcpJson
@@ -46,12 +46,13 @@ internal object UserSerializer : KSerializer<User> {
 
     override fun deserialize(decoder: Decoder): User {
         val input = decoder as JsonDecoder
-        val jsonObject = input.decodeJsonElement() as JsonObject
+        val jsonObject = input.decodeJsonElement() as? JsonObject
+            ?: throw SerializationException("Expected JsonObject for User")
         val id = jsonObject["id"]?.jsonPrimitive?.contentOrNull
         val email = jsonObject["email"]?.jsonPrimitive?.contentOrNull
         val name = jsonObject["name"]?.jsonPrimitive?.contentOrNull
         val encrypted =
-            jsonObject["encrypted"]?.jsonArray?.map { it.jsonPrimitive.content } ?: emptyList()
+            (jsonObject["encrypted"] as? JsonArray)?.mapNotNull { it.jsonPrimitive.contentOrNull } ?: emptyList()
 
         val otherMap =
             jsonObject.filterKeys { it !in setOf("id", "email", "name", "encrypted") }
