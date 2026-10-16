@@ -78,6 +78,18 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     private var lastPlaybackParameters: PlaybackParameters =
         playbackParametersState.value
 
+    private var audioAttributes: AudioAttributes =
+        AudioAttributes.Builder()
+            .setUsage(USAGE_MEDIA)
+            .setContentType(AUDIO_CONTENT_TYPE_SPEECH)
+            .setAllowedCapturePolicy(ALLOW_CAPTURE_BY_SYSTEM)
+            .build()
+
+    /**
+     * Whether playback should resume when audio focus is regained after a transient loss.
+     */
+    private var playAgainOnFocusGain: Boolean = false
+
     private val streamVolumeManager = StreamVolumeManager(
         application,
         eventHandler,
@@ -125,10 +137,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
             .onEach { playback ->
                 notifyListenersPlaybackChanged(lastPlayback, playback)
                 lastPlayback = playback
-                audioFocusManager.updateAudioFocus(
-                    playback.playWhenReady,
-                    playback.state.playerCode
-                )
+                updateAudioFocus(playback)
             }.launchIn(coroutineScope)
 
         playbackParametersState
@@ -278,6 +287,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     }
 
     override fun setPlayWhenReady(playWhenReady: Boolean) {
+        playAgainOnFocusGain = false
         if (playWhenReady) {
             ttsPlayer.play()
         } else {
@@ -637,11 +647,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     }
 
     override fun getAudioAttributes(): AudioAttributes {
-        return AudioAttributes.Builder()
-            .setUsage(USAGE_MEDIA)
-            .setContentType(AUDIO_CONTENT_TYPE_SPEECH)
-            .setAllowedCapturePolicy(ALLOW_CAPTURE_BY_SYSTEM)
-            .build()
+        return audioAttributes
     }
 
     override fun setVolume(volume: Float) {
@@ -745,7 +751,35 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     }
 
     override fun setAudioAttributes(audioAttributes: AudioAttributes, handleAudioFocus: Boolean) {
-        audioFocusManager.setAudioAttributes(audioAttributes)
+        if (this.audioAttributes != audioAttributes) {
+            this.audioAttributes = audioAttributes
+            streamVolumeManager.setStreamType(audioAttributes.volumeControlStream)
+            listeners.sendEvent(
+                EVENT_AUDIO_ATTRIBUTES_CHANGED
+            ) { listener: Listener ->
+                listener.onAudioAttributesChanged(audioAttributes)
+            }
+        }
+
+        // Passing null audio attributes disables audio focus handling.
+        audioFocusManager.setAudioAttributes(audioAttributes.takeIf { handleAudioFocus })
+        updateAudioFocus(ttsPlayer.playback.value)
+    }
+
+    /**
+     * Requests or abandons audio focus according to the given playback state, pausing playback
+     * if focus is denied.
+     */
+    private fun updateAudioFocus(playback: TtsPlayer.Playback) {
+        val playerCommand = audioFocusManager.updateAudioFocus(
+            playback.playWhenReady,
+            playback.state.playerCode
+        )
+        if (playerCommand == AudioFocusManager.PLAYER_COMMAND_DO_NOT_PLAY && playback.playWhenReady) {
+            // Pause through ttsPlayer directly instead of setPlayWhenReady: this pause reflects
+            // the focus state, not a user intent, so it must not clear playAgainOnFocusGain.
+            ttsPlayer.pause()
+        }
     }
 
     private fun notifyListenersPlaybackChanged(
@@ -876,7 +910,26 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
         }
 
         override fun executePlayerCommand(playerCommand: Int) {
-            playWhenReady = playWhenReady && playerCommand != AudioFocusManager.PLAYER_COMMAND_DO_NOT_PLAY
+            when (playerCommand) {
+                AudioFocusManager.PLAYER_COMMAND_DO_NOT_PLAY -> {
+                    // Permanent focus loss: pause and don't resume automatically.
+                    playWhenReady = false
+                }
+                AudioFocusManager.PLAYER_COMMAND_WAIT_FOR_CALLBACK -> {
+                    // Transient focus loss: pause and resume when focus is regained.
+                    // The ordering matters: setting playWhenReady clears playAgainOnFocusGain
+                    // through setPlayWhenReady, so the flag must be set afterwards.
+                    val playAgain = playWhenReady
+                    playWhenReady = false
+                    playAgainOnFocusGain = playAgain
+                }
+                AudioFocusManager.PLAYER_COMMAND_PLAY_WHEN_READY -> {
+                    // Focus (re)gained: resume only if we paused because of a transient loss.
+                    if (playAgainOnFocusGain) {
+                        playWhenReady = true
+                    }
+                }
+            }
         }
     }
 

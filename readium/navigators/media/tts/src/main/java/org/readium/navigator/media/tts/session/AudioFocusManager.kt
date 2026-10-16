@@ -137,6 +137,7 @@ internal class AudioFocusManager(
     fun setAudioAttributes(audioAttributes: AudioAttributes?) {
         if (!Objects.equals(this.audioAttributes, audioAttributes)) {
             this.audioAttributes = audioAttributes
+            rebuildAudioFocusRequest = true
             focusGainToRequest = convertAudioAttributesToFocusGain(audioAttributes)
             require(
                 focusGainToRequest == AUDIOFOCUS_GAIN || focusGainToRequest == AUDIOFOCUS_NONE
