@@ -28,6 +28,7 @@ import org.readium.r2.navigator.DecorableNavigator
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.epub.*
 import org.readium.r2.navigator.epub.css.FontStyle
+import org.readium.r2.navigator.epub.resources.addFontFamilyDeclaration
 import org.readium.r2.navigator.html.HtmlDecorationTemplate
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.navigator.html.toCss
@@ -37,6 +38,7 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.epub.pageList
 import org.readium.r2.testapp.LITERATA
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.ROBOTO_MONO
 import org.readium.r2.testapp.reader.preferences.UserPreferencesViewModel
 import org.readium.r2.testapp.search.SearchFragment
 
@@ -109,6 +111,13 @@ class EpubReaderFragment : VisualReaderFragment() {
                             setFontWeight(200..900)
                         }
                     }
+
+                    // Declare custom fron family from Android resources
+                    addFontFamilyDeclaration(
+                        fontFamily = FontFamily.ROBOTO_MONO,
+                        context = requireContext(),
+                        fontFamilyResId = R.font.roboto_mono
+                    )
                 }
             )
 
