@@ -39,6 +39,9 @@ public data class Rights(
     val end: Instant? = null,
     val other: MapValue = MapValue(),
 ) {
+    @Deprecated("Use other instead", ReplaceWith("other"))
+    public val extensions: MapValue get() = other
+
     @Deprecated("Use kotlinx.serialization to serialize the object")
     val json: JSONObject get() = JSONObject(LcpJson.encodeToString(this))
 }
