@@ -1,28 +1,32 @@
-// TODO templated
 /*
- * Module: r2-lcp-kotlin
- * Developers: Aferdita Muriqi
- *
- * Copyright (c) 2019. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2026 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by a BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
-
-@file:OptIn(InternalReadiumApi::class)
 
 package org.readium.r2.lcp.license.model.components
 
-import org.json.JSONObject
-import org.readium.r2.lcp.LcpError
-import org.readium.r2.lcp.LcpException
-import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.extensions.optNullableInt
-import org.readium.r2.shared.extensions.optNullableString
-import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonEncoder
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonPrimitive
 import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
+@Serializable(with = LinkSerializer::class)
 public data class Link(
     val href: Href,
     val mediaType: MediaType? = null,
@@ -32,35 +36,6 @@ public data class Link(
     val length: Int? = null,
     val hash: String? = null,
 ) {
-
-    public companion object {
-        public operator fun invoke(
-            json: JSONObject,
-        ): Link {
-            val href = json.optNullableString("href")
-                ?.let {
-                    Href(
-                        href = it,
-                        templated = json.optBoolean("templated", false)
-                    )
-                }
-                ?: throw LcpException(LcpError.Parsing.Link)
-
-            return Link(
-                href = href,
-                mediaType = json.optNullableString("type")
-                    ?.let { MediaType(it) },
-                title = json.optNullableString("title"),
-                rels = json.optStringsFromArrayOrSingle("rel").toSet()
-                    .takeIf { it.isNotEmpty() }
-                    ?: throw LcpException(LcpError.Parsing.Link),
-                profile = json.optNullableString("profile"),
-                length = json.optNullableInt("length"),
-                hash = json.optNullableString("hash")
-            )
-        }
-    }
-
     /**
      * Returns the URL represented by this link's HREF.
      *
@@ -69,4 +44,80 @@ public data class Link(
     public fun url(
         parameters: Map<String, String> = emptyMap(),
     ): Url = href.resolve(parameters = parameters)
+}
+
+public fun List<Link>.firstWithRel(rel: String, type: MediaType? = null): Link? =
+    firstOrNull { it.matches(rel, type) }
+
+internal fun List<Link>.firstWithRelAndNoType(rel: String): Link? =
+    firstOrNull { it.rels.contains(rel) && it.mediaType == null }
+
+public fun List<Link>.allWithRel(rel: String, type: MediaType? = null): List<Link> =
+    filter { it.matches(rel, type) }
+
+private fun Link.matches(rel: String, mediaType: MediaType?): Boolean =
+    this.rels.contains(rel) && (mediaType?.matches(this.mediaType) ?: true)
+
+public object LinkSerializer : KSerializer<Link> {
+    override val descriptor: SerialDescriptor = JsonObject.serializer().descriptor
+
+    override fun deserialize(decoder: Decoder): Link {
+        val input = decoder as JsonDecoder
+        val jsonObject = input.decodeJsonElement() as? JsonObject
+            ?: throw SerializationException("Expected JsonObject for Link")
+
+        val hrefStr = jsonObject["href"]?.jsonPrimitive?.contentOrNull
+            ?: throw SerializationException("Invalid Link: missing href")
+
+        val templated = jsonObject["templated"]?.jsonPrimitive?.booleanOrNull ?: false
+        val href = Href(hrefStr, templated)
+            ?: throw SerializationException("Invalid Link: invalid href $hrefStr")
+
+        val mediaType = jsonObject["type"]?.jsonPrimitive?.contentOrNull?.let { MediaType(it) }
+        val title = jsonObject["title"]?.jsonPrimitive?.contentOrNull
+
+        val relElement = jsonObject["rel"]
+        val rels = when (relElement) {
+            is JsonPrimitive -> relElement.contentOrNull?.let { setOf(it) } ?: emptySet()
+            is JsonArray -> relElement.mapNotNull { it.jsonPrimitive.contentOrNull }.toSet()
+            else -> emptySet()
+        }.takeIf { it.isNotEmpty() } ?: throw SerializationException("Invalid Link: missing rel")
+
+        val profile = jsonObject["profile"]?.jsonPrimitive?.contentOrNull
+        val length = jsonObject["length"]?.jsonPrimitive?.intOrNull
+        val hash = jsonObject["hash"]?.jsonPrimitive?.contentOrNull
+
+        return Link(
+            href = href,
+            mediaType = mediaType,
+            title = title,
+            rels = rels,
+            profile = profile,
+            length = length,
+            hash = hash
+        )
+    }
+
+    override fun serialize(encoder: Encoder, value: Link) {
+        val output = encoder as JsonEncoder
+        val map = mutableMapOf<String, JsonElement>()
+        map["href"] = JsonPrimitive(value.href.toString())
+        if (value.href.isTemplated) {
+            map["templated"] = JsonPrimitive(true)
+        }
+        value.mediaType?.let { map["type"] = JsonPrimitive(it.toString()) }
+        value.title?.let { map["title"] = JsonPrimitive(it) }
+
+        if (value.rels.size == 1) {
+            map["rel"] = JsonPrimitive(value.rels.first())
+        } else if (value.rels.isNotEmpty()) {
+            map["rel"] = JsonArray(value.rels.map { JsonPrimitive(it) })
+        }
+
+        value.profile?.let { map["profile"] = JsonPrimitive(it) }
+        value.length?.let { map["length"] = JsonPrimitive(it) }
+        value.hash?.let { map["hash"] = JsonPrimitive(it) }
+
+        output.encodeJsonElement(JsonObject(map))
+    }
 }
