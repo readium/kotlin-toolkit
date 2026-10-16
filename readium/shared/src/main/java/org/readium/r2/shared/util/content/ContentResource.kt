@@ -135,10 +135,10 @@ public class ContentResource(
         fromIndex: Long,
         block: suspend (CountingInputStream) -> T,
     ): Try<T, ReadError> {
-        val stream = stream(fromIndex)
-            .getOrElse { return Try.failure(it) }
-
         return Try.catching {
+            val stream = stream(fromIndex)
+                .getOrElse { return Try.failure(it) }
+
             block(stream)
         }
     }
