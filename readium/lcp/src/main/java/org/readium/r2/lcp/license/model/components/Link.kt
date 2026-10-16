@@ -77,8 +77,8 @@ public object LinkSerializer : KSerializer<Link> {
 
         val relElement = jsonObject["rel"]
         val rels = when (relElement) {
-            is JsonPrimitive -> setOf(relElement.content)
-            is JsonArray -> relElement.map { it.jsonPrimitive.content }.toSet()
+            is JsonPrimitive -> relElement.contentOrNull?.let { setOf(it) } ?: emptySet()
+            is JsonArray -> relElement.mapNotNull { it.jsonPrimitive.contentOrNull }.toSet()
             else -> emptySet()
         }.takeIf { it.isNotEmpty() } ?: throw SerializationException("Invalid Link: missing rel")
 
