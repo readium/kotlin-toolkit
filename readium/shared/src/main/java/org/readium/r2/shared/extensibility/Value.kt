@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.shared.extensibility
 
 import android.os.Parcelable
@@ -24,6 +26,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.longOrNull
+import org.readium.r2.shared.InternalReadiumApi
 
 /**
  * A type-safe representation of an extensible value (such as a dynamic JSON value).
@@ -84,6 +87,7 @@ public data class MapValue(val value: Map<String, Value> = emptyMap()) : Value {
 
 // JSON conversions
 
+@InternalReadiumApi
 public fun Value.toJsonElement(): JsonElement = when (this) {
     is NullValue -> JsonNull
     is BooleanValue -> JsonPrimitive(value)
@@ -94,11 +98,14 @@ public fun Value.toJsonElement(): JsonElement = when (this) {
     is MapValue -> toJsonObject()
 }
 
+@InternalReadiumApi
 public fun ListValue.toJsonArray(): JsonArray = JsonArray(value.map { it.toJsonElement() })
 
+@InternalReadiumApi
 public fun MapValue.toJsonObject(): JsonObject =
     JsonObject(value.mapValues { (_, value) -> value.toJsonElement() })
 
+@InternalReadiumApi
 public fun JsonElement.toValue(): Value = when (this) {
     is JsonNull -> NullValue
     is JsonPrimitive -> {
@@ -115,8 +122,10 @@ public fun JsonElement.toValue(): Value = when (this) {
     is JsonObject -> toMapValue()
 }
 
+@InternalReadiumApi
 public fun JsonArray.toListValue(): ListValue = ListValue(map { it.toValue() })
 
+@InternalReadiumApi
 public fun JsonObject.toMapValue(): MapValue = MapValue(mapValues { (_, element) -> element.toValue() })
 
 // Serializers (internal)

@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.lcp.license.model.components.lcp
 
 import kotlinx.serialization.KSerializer
@@ -22,6 +24,7 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import org.json.JSONObject
 import org.readium.r2.lcp.license.model.LcpJson
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensibility.MapValue
 import org.readium.r2.shared.extensibility.toJsonObject
 import org.readium.r2.shared.extensibility.toMapValue
