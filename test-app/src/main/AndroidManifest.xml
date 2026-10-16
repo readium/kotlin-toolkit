@@ -67,6 +67,12 @@
 
             4. `android:pathPattern` is case sensitive and is not using a true regex (it's just
                 globbing), so we need to match the uppercase versions of file extensions as well.
+
+            5. Don't declare the `http` and `https` schemes (nor the BROWSABLE category) in the
+               VIEW filters. Combined with a wildcard host, they fail the Google Play Console
+               deep link validation ("Direct links don't work", see issue #426). They are not
+               needed for side loading: apps and browsers hand files over with `content://` (or
+               legacy `file://`) URIs.
             -->
 
             <!-- SEND (Share) action -->
@@ -75,7 +81,6 @@
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
 
                 <!-- WARNING: Don't set `android:scheme` because it will break the matching. -->
 
@@ -110,13 +115,9 @@
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="app" />
                 <data android:scheme="content" />
                 <data android:scheme="file" />
-                <data android:scheme="http" />
-                <data android:scheme="https" />
 
                 <!-- Audiobook (Readium) -->
                 <data android:mimeType="application/audiobook+zip" />
@@ -147,15 +148,11 @@
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
 
                 <data android:host="*" />
 
-                <data android:scheme="app" />
                 <data android:scheme="content" />
                 <data android:scheme="file" />
-                <data android:scheme="http" />
-                <data android:scheme="https" />
 
                 <!-- This media type is necessary, otherwise it won't match on the file extension -->
                 <data android:mimeType="*/*" />
