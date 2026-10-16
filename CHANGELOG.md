@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file. Take a look
 #### Shared
 
 * [#838](https://github.com/readium/kotlin-toolkit/issues/838) Fixed a crash when reading a `content://` URI after the app lost its read permission. `AssetRetriever.retrieve()` and `ContentResource` now return a `ContentResolverError.Forbidden` failure instead of throwing a `SecurityException`.
+* Fixed reading ZIP-based publications larger than 2 GiB when they are streamed instead of opened from a local file, for example from a `content://` URI or an HTTP URL.
 
 
 ## [3.4.0] - 2026-09-11
