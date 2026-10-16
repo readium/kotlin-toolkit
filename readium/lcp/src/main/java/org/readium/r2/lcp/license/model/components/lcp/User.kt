@@ -35,7 +35,7 @@ public data class User(
     val email: String? = null,
     val name: String? = null,
     val encrypted: List<String> = emptyList(),
-    val extensions: MapValue = MapValue(),
+    val other: MapValue = MapValue(),
 ) {
     @Deprecated("Use kotlinx.serialization to serialize the object")
     val json: JSONObject get() = JSONObject(LcpJson.encodeToString(this))
@@ -53,7 +53,7 @@ internal object UserSerializer : KSerializer<User> {
         val encrypted =
             jsonObject["encrypted"]?.jsonArray?.map { it.jsonPrimitive.content } ?: emptyList()
 
-        val extensionsMap =
+        val otherMap =
             jsonObject.filterKeys { it !in setOf("id", "email", "name", "encrypted") }
 
         return User(
@@ -61,7 +61,7 @@ internal object UserSerializer : KSerializer<User> {
             email = email,
             name = name,
             encrypted = encrypted,
-            extensions = JsonObject(extensionsMap).toMapValue()
+            other = JsonObject(otherMap).toMapValue()
         )
     }
 
@@ -74,7 +74,7 @@ internal object UserSerializer : KSerializer<User> {
         if (value.encrypted.isNotEmpty()) {
             map["encrypted"] = JsonArray(value.encrypted.map { JsonPrimitive(it) })
         }
-        map.putAll(value.extensions.toJsonObject())
+        map.putAll(value.other.toJsonObject())
         output.encodeJsonElement(JsonObject(map))
     }
 }

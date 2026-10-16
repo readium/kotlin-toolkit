@@ -36,7 +36,7 @@ public data class Rights(
     val copy: Int? = null,
     val start: Instant? = null,
     val end: Instant? = null,
-    val extensions: MapValue = MapValue(),
+    val other: MapValue = MapValue(),
 ) {
     @Deprecated("Use kotlinx.serialization to serialize the object")
     val json: JSONObject get() = JSONObject(LcpJson.encodeToString(this))
@@ -53,14 +53,14 @@ internal object RightsSerializer : KSerializer<Rights> {
         val start = jsonObject["start"]?.jsonPrimitive?.contentOrNull?.toInstant()
         val end = jsonObject["end"]?.jsonPrimitive?.contentOrNull?.toInstant()
 
-        val extensionsMap = jsonObject.filterKeys { it !in setOf("print", "copy", "start", "end") }
+        val otherMap = jsonObject.filterKeys { it !in setOf("print", "copy", "start", "end") }
 
         return Rights(
             print = print,
             copy = copy,
             start = start,
             end = end,
-            extensions = JsonObject(extensionsMap).toMapValue()
+            other = JsonObject(otherMap).toMapValue()
         )
     }
 
@@ -71,7 +71,7 @@ internal object RightsSerializer : KSerializer<Rights> {
         value.copy?.let { map["copy"] = JsonPrimitive(it) }
         value.start?.let { map["start"] = JsonPrimitive(it.toString()) }
         value.end?.let { map["end"] = JsonPrimitive(it.toString()) }
-        map.putAll(value.extensions.toJsonObject())
+        map.putAll(value.other.toJsonObject())
         output.encodeJsonElement(JsonObject(map))
     }
 }
