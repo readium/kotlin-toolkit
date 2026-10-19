@@ -14,8 +14,6 @@ import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
@@ -155,15 +153,21 @@ public class Href private constructor(private val href: Url) : Parcelable {
 
 @ExperimentalReadiumApi
 public object HrefSerializer : KSerializer<Href> {
-    override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("Href", PrimitiveKind.STRING)
+    @Serializable
+    private data class Surrogate(val url: String, val templated: Boolean = false)
+
+    override val descriptor: SerialDescriptor = Surrogate.serializer().descriptor
 
     override fun deserialize(decoder: Decoder): Href {
-        val string = decoder.decodeString()
-        return Href(string) ?: throw SerializationException("Invalid Href: $string")
+        val surrogate = decoder.decodeSerializableValue(Surrogate.serializer())
+        return Href(surrogate.url, surrogate.templated)
+            ?: throw SerializationException("Invalid Href: ${surrogate.url}")
     }
 
     override fun serialize(encoder: Encoder, value: Href) {
-        encoder.encodeString(value.toString())
+        encoder.encodeSerializableValue(
+            Surrogate.serializer(),
+            Surrogate(value.toString(), value.isTemplated)
+        )
     }
 }
