@@ -10,6 +10,7 @@ package org.readium.r2.shared.extensibility
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -17,11 +18,13 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
@@ -61,14 +64,17 @@ public operator fun Value.get(index: Int): Value? = (this as? ListValue)?.value?
 
 @ExperimentalReadiumApi
 @Parcelize
+@Serializable(with = NullValueSerializer::class)
 public data object NullValue : Value
 
 @ExperimentalReadiumApi
 @Parcelize
+@Serializable(with = BooleanValueSerializer::class)
 public data class BooleanValue(val value: Boolean) : Value
 
 @ExperimentalReadiumApi
 @Parcelize
+@Serializable(with = IntValueSerializer::class)
 public data class IntValue(val value: Long) : Value {
     public constructor(value: Int) : this(value.toLong())
 
@@ -77,12 +83,14 @@ public data class IntValue(val value: Long) : Value {
 
 @ExperimentalReadiumApi
 @Parcelize
+@Serializable(with = DoubleValueSerializer::class)
 public data class DoubleValue(val value: Double) : Value {
     public constructor(value: Float) : this(value.toDouble())
 }
 
 @ExperimentalReadiumApi
 @Parcelize
+@Serializable(with = StringValueSerializer::class)
 public data class StringValue(val value: String) : Value
 
 @ExperimentalReadiumApi
@@ -144,25 +152,83 @@ public fun JsonObject.toMapValue(): MapValue = MapValue(mapValues { (_, element)
 
 // Serializers (internal)
 
-internal object ValueSerializer : KSerializer<Value> {
-    override val descriptor: SerialDescriptor = JsonElement.serializer().descriptor
+internal object ValueSerializer : JsonContentPolymorphicSerializer<Value>(Value::class) {
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<Value> =
+        when (element) {
+            is JsonNull -> NullValue.serializer()
+            is JsonPrimitive -> when {
+                element.isString -> StringValue.serializer()
+                element.booleanOrNull != null -> BooleanValue.serializer()
+                element.longOrNull != null -> IntValue.serializer()
+                element.doubleOrNull != null -> DoubleValue.serializer()
+                else -> StringValue.serializer()
+            }
+            is JsonArray -> ListValue.serializer()
+            is JsonObject -> MapValue.serializer()
+        }
+}
 
-    override fun deserialize(decoder: Decoder): Value {
-        val jsonDecoder = decoder as? JsonDecoder
-            ?: throw SerializationException("Value can only be deserialized with Json")
-        return jsonDecoder.decodeJsonElement().toValue()
+internal object NullValueSerializer : KSerializer<NullValue> {
+    override val descriptor: SerialDescriptor = JsonNull.serializer().descriptor
+
+    override fun deserialize(decoder: Decoder): NullValue {
+        if (decoder.decodeNotNullMark()) {
+            throw SerializationException("Expected null for NullValue")
+        }
+        decoder.decodeNull()
+        return NullValue
     }
 
-    override fun serialize(encoder: Encoder, value: Value) {
-        when (value) {
-            is NullValue -> encoder.encodeNull()
-            is BooleanValue -> encoder.encodeBoolean(value.value)
-            is IntValue -> encoder.encodeLong(value.value)
-            is DoubleValue -> encoder.encodeDouble(value.value)
-            is StringValue -> encoder.encodeString(value.value)
-            is ListValue -> encoder.encodeSerializableValue(ListValueSerializer, value)
-            is MapValue -> encoder.encodeSerializableValue(MapValueSerializer, value)
-        }
+    override fun serialize(encoder: Encoder, value: NullValue) {
+        encoder.encodeNull()
+    }
+}
+
+internal object BooleanValueSerializer : KSerializer<BooleanValue> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("BooleanValue", PrimitiveKind.BOOLEAN)
+
+    override fun deserialize(decoder: Decoder): BooleanValue =
+        BooleanValue(decoder.decodeBoolean())
+
+    override fun serialize(encoder: Encoder, value: BooleanValue) {
+        encoder.encodeBoolean(value.value)
+    }
+}
+
+internal object IntValueSerializer : KSerializer<IntValue> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("IntValue", PrimitiveKind.LONG)
+
+    override fun deserialize(decoder: Decoder): IntValue =
+        IntValue(decoder.decodeLong())
+
+    override fun serialize(encoder: Encoder, value: IntValue) {
+        encoder.encodeLong(value.value)
+    }
+}
+
+internal object DoubleValueSerializer : KSerializer<DoubleValue> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("DoubleValue", PrimitiveKind.DOUBLE)
+
+    override fun deserialize(decoder: Decoder): DoubleValue =
+        DoubleValue(decoder.decodeDouble())
+
+    override fun serialize(encoder: Encoder, value: DoubleValue) {
+        encoder.encodeDouble(value.value)
+    }
+}
+
+internal object StringValueSerializer : KSerializer<StringValue> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("StringValue", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): StringValue =
+        StringValue(decoder.decodeString())
+
+    override fun serialize(encoder: Encoder, value: StringValue) {
+        encoder.encodeString(value.value)
     }
 }
 
