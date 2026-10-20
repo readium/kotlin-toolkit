@@ -169,13 +169,23 @@ internal object StatusDocumentSerializer : KSerializer<StatusDocument> {
             throw LcpException(LcpError.Parsing.Link)
         }
 
-        val potentialRights = jsonElement["potential_rights"]?.let {
-            LcpJson.decodeFromJsonElement(PotentialRights.serializer(), it)
+        val potentialRights = (jsonElement["potential_rights"] as? JsonObject)?.let {
+            try {
+                LcpJson.decodeFromJsonElement(PotentialRights.serializer(), it)
+            } catch (e: SerializationException) {
+                Timber.w(e, "Failed to decode potential_rights, falling back to default")
+                PotentialRights()
+            }
         }
 
         val eventsJson = jsonElement["events"] as? JsonArray
-        val events = eventsJson?.map {
-            LcpJson.decodeFromJsonElement(Event.serializer(), it)
+        val events = eventsJson?.mapNotNull {
+            try {
+                LcpJson.decodeFromJsonElement(Event.serializer(), it)
+            } catch (e: SerializationException) {
+                Timber.w(e, "Failed to decode event, skipping")
+                null
+            }
         } ?: emptyList()
 
         return StatusDocument(
