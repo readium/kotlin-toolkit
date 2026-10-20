@@ -22,7 +22,7 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
     ): String? {
         val candidates = this@PassphrasesService.possiblePassphrasesFromRepository(license)
         val passphrase = try {
-            LcpClient.findOneValidPassphrase(license.json.toString(), candidates)
+            LcpClient.findOneValidPassphrase(license.jsonString, candidates)
         } catch (e: Exception) {
             null
         }
@@ -60,7 +60,7 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
         }
 
         return try {
-            val passphrase = LcpClient.findOneValidPassphrase(license.json.toString(), passphrases)
+            val passphrase = LcpClient.findOneValidPassphrase(license.jsonString, passphrases)
             addPassphrase(passphrase, true, license.id, license.provider, license.user.id)
             passphrase
         } catch (e: Exception) {

@@ -151,7 +151,7 @@ internal class LicenseValidation(
         val prodLicense = LicenseDocument(data = prodLicenseInput.readBytes())
         val passphrase = "7B7602FEF5DEDA10F768818FFACBC60B173DB223B7E66D8B2221EBE2C635EFAD"
         try {
-            LcpClient.findOneValidPassphrase(prodLicense.json.toString(), listOf(passphrase)) == passphrase
+            LcpClient.findOneValidPassphrase(prodLicense.jsonString, listOf(passphrase)) == passphrase
         } catch (e: Exception) {
             false
         }
@@ -466,7 +466,7 @@ internal class LicenseValidation(
         if (!supportedProfiles.contains(profile)) {
             throw LcpException(LcpError.LicenseProfileNotSupported)
         }
-        val context = LcpClient.createContext(license.json.toString(), passphrase, crl.retrieve())
+        val context = LcpClient.createContext(license.jsonString, passphrase, crl.retrieve())
         raise(Event.validatedIntegrity(context))
     }
 
