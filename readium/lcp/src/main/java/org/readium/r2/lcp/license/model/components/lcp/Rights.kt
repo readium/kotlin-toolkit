@@ -38,10 +38,8 @@ public data class Rights(
     val copy: Int? = null,
     val start: Instant? = null,
     val end: Instant? = null,
-    @ExperimentalReadiumApi
     val other: MapValue = MapValue(),
 ) {
-    @ExperimentalReadiumApi
     @Deprecated("Use other instead", ReplaceWith("other"))
     public val extensions: MapValue get() = other
 

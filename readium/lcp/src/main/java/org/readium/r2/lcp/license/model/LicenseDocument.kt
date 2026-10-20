@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:OptIn(InternalReadiumApi::class)
+@file:OptIn(InternalReadiumApi::class, ExperimentalReadiumApi::class)
 
 package org.readium.r2.lcp.license.model
 
@@ -35,6 +35,7 @@ import org.readium.r2.lcp.license.model.components.lcp.Rights
 import org.readium.r2.lcp.license.model.components.lcp.Signature
 import org.readium.r2.lcp.license.model.components.lcp.User
 import org.readium.r2.lcp.service.URLParameters
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.toInstant
 import org.readium.r2.shared.util.AbsoluteUrl
