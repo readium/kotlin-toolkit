@@ -4,22 +4,25 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:OptIn(InternalReadiumApi::class, ExperimentalReadiumApi::class)
+@file:OptIn(InternalReadiumApi::class, ExperimentalReadiumApi::class, ExperimentalSerializationApi::class)
 
 package org.readium.r2.shared.extensibility
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -151,44 +154,38 @@ internal object ValueSerializer : KSerializer<Value> {
     }
 
     override fun serialize(encoder: Encoder, value: Value) {
-        val jsonEncoder = encoder as? JsonEncoder
-            ?: throw SerializationException("Value can only be serialized with Json")
-        jsonEncoder.encodeJsonElement(value.toJsonElement())
+        when (value) {
+            is NullValue -> encoder.encodeNull()
+            is BooleanValue -> encoder.encodeBoolean(value.value)
+            is IntValue -> encoder.encodeLong(value.value)
+            is DoubleValue -> encoder.encodeDouble(value.value)
+            is StringValue -> encoder.encodeString(value.value)
+            is ListValue -> encoder.encodeSerializableValue(ListValueSerializer, value)
+            is MapValue -> encoder.encodeSerializableValue(MapValueSerializer, value)
+        }
     }
 }
 
 internal object MapValueSerializer : KSerializer<MapValue> {
-    override val descriptor: SerialDescriptor = JsonObject.serializer().descriptor
+    private val delegate = MapSerializer(String.serializer(), ValueSerializer)
+    override val descriptor: SerialDescriptor = delegate.descriptor
 
-    override fun deserialize(decoder: Decoder): MapValue {
-        val jsonDecoder = decoder as? JsonDecoder
-            ?: throw SerializationException("MapValue can only be deserialized with Json")
-        val jsonObject = jsonDecoder.decodeJsonElement() as? JsonObject
-            ?: throw SerializationException("Expected JsonObject for MapValue")
-        return jsonObject.toMapValue()
-    }
+    override fun deserialize(decoder: Decoder): MapValue =
+        MapValue(decoder.decodeSerializableValue(delegate))
 
     override fun serialize(encoder: Encoder, value: MapValue) {
-        val jsonEncoder = encoder as? JsonEncoder
-            ?: throw SerializationException("MapValue can only be serialized with Json")
-        jsonEncoder.encodeJsonElement(value.toJsonObject())
+        encoder.encodeSerializableValue(delegate, value.value)
     }
 }
 
 internal object ListValueSerializer : KSerializer<ListValue> {
-    override val descriptor: SerialDescriptor = JsonArray.serializer().descriptor
+    private val delegate = ListSerializer(ValueSerializer)
+    override val descriptor: SerialDescriptor = delegate.descriptor
 
-    override fun deserialize(decoder: Decoder): ListValue {
-        val jsonDecoder = decoder as? JsonDecoder
-            ?: throw SerializationException("ListValue can only be deserialized with Json")
-        val jsonArray = jsonDecoder.decodeJsonElement() as? JsonArray
-            ?: throw SerializationException("Expected JsonArray for ListValue")
-        return jsonArray.toListValue()
-    }
+    override fun deserialize(decoder: Decoder): ListValue =
+        ListValue(decoder.decodeSerializableValue(delegate))
 
     override fun serialize(encoder: Encoder, value: ListValue) {
-        val jsonEncoder = encoder as? JsonEncoder
-            ?: throw SerializationException("ListValue can only be serialized with Json")
-        jsonEncoder.encodeJsonElement(value.toJsonArray())
+        encoder.encodeSerializableValue(delegate, value.value)
     }
 }
