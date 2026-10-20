@@ -12,6 +12,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KeepGeneratedSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.builtins.SetSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.JsonArray
@@ -68,8 +69,14 @@ public object LinkSerializer :
     override fun transformDeserialize(element: JsonElement): JsonElement {
         if (element !is JsonObject) return element
 
+        if ("rel" !in element) {
+            throw SerializationException("Invalid Link: missing rel")
+        }
+
         val hrefValue = element["href"] ?: JsonNull
-        val templatedValue = element["templated"] ?: JsonPrimitive(false)
+        val templatedValue = JsonPrimitive(
+            (element["templated"] as? JsonPrimitive)?.booleanOrNull ?: false
+        )
 
         return JsonObject(
             buildMap {
@@ -113,6 +120,9 @@ public object RelSerializer :
     override fun transformDeserialize(element: JsonElement): JsonElement {
         if (element is JsonPrimitive) {
             return transformDeserialize(JsonArray(listOf(element)))
+        }
+        if (element is JsonArray && element.isEmpty()) {
+            throw SerializationException("Invalid Link: empty rel")
         }
 
         return super.transformDeserialize(element)
