@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:OptIn(InternalReadiumApi::class)
+@file:OptIn(InternalReadiumApi::class, ExperimentalReadiumApi::class)
 
 package org.readium.r2.shared.extensibility
 
@@ -26,11 +26,13 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.longOrNull
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 
 /**
  * A type-safe representation of an extensible value (such as a dynamic JSON value).
  */
+@ExperimentalReadiumApi
 @Serializable(with = ValueSerializer::class)
 public sealed interface Value : Parcelable {
     public val boolean: Boolean? get() = (this as? BooleanValue)?.value
@@ -48,16 +50,21 @@ public sealed interface Value : Parcelable {
     public val isNull: Boolean get() = this is NullValue
 }
 
+@ExperimentalReadiumApi
 public operator fun Value.get(key: String): Value? = (this as? MapValue)?.value?.get(key)
 
+@ExperimentalReadiumApi
 public operator fun Value.get(index: Int): Value? = (this as? ListValue)?.value?.getOrNull(index)
 
+@ExperimentalReadiumApi
 @Parcelize
 public data object NullValue : Value
 
+@ExperimentalReadiumApi
 @Parcelize
 public data class BooleanValue(val value: Boolean) : Value
 
+@ExperimentalReadiumApi
 @Parcelize
 public data class IntValue(val value: Long) : Value {
     public constructor(value: Int) : this(value.toLong())
@@ -65,20 +72,24 @@ public data class IntValue(val value: Long) : Value {
     public fun toInt(): Int = value.toInt()
 }
 
+@ExperimentalReadiumApi
 @Parcelize
 public data class DoubleValue(val value: Double) : Value {
     public constructor(value: Float) : this(value.toDouble())
 }
 
+@ExperimentalReadiumApi
 @Parcelize
 public data class StringValue(val value: String) : Value
 
+@ExperimentalReadiumApi
 @Parcelize
 @Serializable(with = ListValueSerializer::class)
 public data class ListValue(val value: List<Value> = emptyList()) : Value {
     public constructor(vararg elements: Value) : this(elements.toList())
 }
 
+@ExperimentalReadiumApi
 @Parcelize
 @Serializable(with = MapValueSerializer::class)
 public data class MapValue(val value: Map<String, Value> = emptyMap()) : Value {

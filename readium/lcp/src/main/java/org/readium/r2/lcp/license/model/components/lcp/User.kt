@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:OptIn(InternalReadiumApi::class)
+@file:OptIn(InternalReadiumApi::class, ExperimentalReadiumApi::class)
 
 package org.readium.r2.lcp.license.model.components.lcp
 
@@ -24,6 +24,7 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import org.json.JSONObject
 import org.readium.r2.lcp.license.model.LcpJson
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensibility.MapValue
 import org.readium.r2.shared.extensibility.toJsonObject
@@ -35,8 +36,10 @@ public data class User(
     val email: String? = null,
     val name: String? = null,
     val encrypted: List<String> = emptyList(),
+    @ExperimentalReadiumApi
     val other: MapValue = MapValue(),
 ) {
+    @ExperimentalReadiumApi
     @Deprecated("Use other instead", ReplaceWith("other"))
     public val extensions: MapValue get() = other
 
