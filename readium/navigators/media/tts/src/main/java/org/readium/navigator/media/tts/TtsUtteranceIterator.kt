@@ -8,12 +8,18 @@
 
 package org.readium.navigator.media.tts
 
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.isActive
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.html.cssSelector
+import org.readium.r2.shared.publication.html.domRange
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.services.content.Content
+import org.readium.r2.shared.publication.services.content.Content.TextElement
 import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.content.TextContentTokenizer
 import org.readium.r2.shared.util.CursorList
@@ -49,6 +55,9 @@ internal class TtsUtteranceIterator(
     private var utterances: CursorList<Utterance> =
         CursorList()
 
+    // Backward prefetch must not consume the pending sentence-level seek.
+    private var requestedLocator: Locator? = initialLocator?.takeIf { it.locations.domRange != null }
+
     /**
      * [Content.Iterator] used to iterate through the [publication].
      */
@@ -81,6 +90,7 @@ internal class TtsUtteranceIterator(
      * Moves the iterator to the position provided in [locator].
      */
     fun seek(locator: Locator) {
+        requestedLocator = locator.takeIf { it.locations.domRange != null }
         publicationIterator = createIterator(locator)
     }
 
@@ -88,6 +98,7 @@ internal class TtsUtteranceIterator(
      * Moves the iterator to the beginning of the publication.
      */
     fun seekToBeginning() {
+        clearRequestedLocator()
         publicationIterator = createIterator(locator = null)
     }
 
@@ -97,6 +108,7 @@ internal class TtsUtteranceIterator(
     fun seekToResource(index: Int) {
         val link = publication.readingOrder.getOrNull(index) ?: return
         val locator = publication.locatorFromLink(link)
+        clearRequestedLocator()
         publicationIterator = createIterator(locator)
     }
 
@@ -106,6 +118,10 @@ internal class TtsUtteranceIterator(
 
     private fun createIterator(locator: Locator?): Content.Iterator =
         contentService.content(locator).iterator()
+
+    private fun clearRequestedLocator() {
+        requestedLocator = null
+    }
 
     suspend fun hasPrevious(): Boolean =
         hasNextIn(Direction.Backward)
@@ -150,18 +166,102 @@ internal class TtsUtteranceIterator(
     }
 
     /**
-     * Loads the utterances for the next publication [Content.Element] item in the given [direction].
+     * Loads the next element's utterances, selecting a sentence only for a pending forward DOM seek.
+     *
+     * @param direction Direction of traversal through the publication content.
+     * @return `true` when a nonempty utterance list is ready for the cursor.
      */
     private suspend fun loadNextUtterances(direction: Direction): Boolean {
-        val content = publicationIterator.nextIn(direction)
-            ?: return false
+        val target = requestedLocator
 
-        val nextUtterances = content
-            .tokenize()
-            .flatMap { it.utterances() }
+        if (direction == Direction.Backward || target == null) {
+            return loadOrdinaryUtterances(direction)
+        }
+
+        val htmlTarget = publication.resolveTtsHtmlTarget(target)
+
+        if (htmlTarget == null) {
+            clearRequestedLocator()
+            return loadOrdinaryUtterances(direction)
+        }
+
+        val fallback = if (htmlTarget.text.isBlank()) {
+            target.copy(locations = Locator.Locations(progression = 0.0))
+        } else {
+            target.copy(locations = Locator.Locations(otherLocations = mapOf("cssSelector" to htmlTarget.cssSelector)))
+        }
+
+        var fragmentEnd = 0
+        var matchingBlockFound = false
+
+        while (currentCoroutineContext().isActive) {
+            val content = publicationIterator.nextIn(Direction.Forward) ?: break
+
+            if (content.locator.href != target.href) {
+                break
+            }
+
+            if (content !is TextElement || content.locator.locations.cssSelector != htmlTarget.cssSelector) {
+                if (matchingBlockFound) {
+                    break
+                }
+                continue
+            }
+
+            matchingBlockFound = true
+
+            val fragment = content.text
+
+            val start = htmlTarget.text.indexOf(fragment, fragmentEnd)
+            if (start < 0) {
+                continue
+            }
+
+            fragmentEnd = start + fragment.length
+
+            if (htmlTarget.offset !in start until fragmentEnd) {
+                continue
+            }
+
+            val spokenStart = fragment.indexOfFirstFrom(htmlTarget.offset - start) { it != ' ' }
+            val nextUtterances = content.locatedUtterances()
+
+            val selected = nextUtterances.indexOfFirst { spokenStart in it.range }
+            if (selected < 0) {
+                continue
+            }
+
+            clearRequestedLocator()
+
+            utterances = CursorList(nextUtterances.map { it.utterance }, selected - 1)
+
+            return true
+        }
+
+        currentCoroutineContext().ensureActive()
+
+        // The selected block is exhausted. Restart once from its first fragment;
+        // an empty block falls back to the resource's beginning.
+        clearRequestedLocator()
+
+        publicationIterator = createIterator(fallback)
+
+        return loadOrdinaryUtterances(Direction.Forward)
+    }
+
+    /**
+     * Loads ordinary utterances, preserving navigation after the DOM seek.
+     *
+     * @param direction Direction of traversal through the publication content.
+     * @return `true` when a nonempty utterance list is ready for the cursor.
+     */
+    private suspend fun loadOrdinaryUtterances(direction: Direction): Boolean {
+        val content = publicationIterator.nextIn(direction) ?: return false
+
+        val nextUtterances = content.tokenize().flatMap { it.utterances() }
 
         if (nextUtterances.isEmpty()) {
-            return loadNextUtterances(direction)
+            return loadOrdinaryUtterances(direction)
         }
 
         utterances = CursorList(
@@ -190,26 +290,80 @@ internal class TtsUtteranceIterator(
     }
 
     /**
+     * Splits the selected text element into utterances and their source ranges.
+     *
+     * Ranges refer to offsets in the emitted element text, not to token indices; punctuation-only
+     * tokens are excluded just as they are from ordinary speech.
+     *
+     * @return Spoken utterances and their UTF-16 ranges in this text element.
+     */
+    private fun TextElement.locatedUtterances(): List<LocatedUtterance> {
+        val contentTokenizer = TextContentTokenizer(
+            language = this@TtsUtteranceIterator.language,
+            textTokenizerFactory = tokenizerFactory,
+            overrideContentLanguage = overrideContentLanguage
+        )
+
+        var elementOffset = 0
+
+        return buildList {
+            for (segment in segments) {
+                val tokenized = contentTokenizer.tokenize(copy(segments = listOf(segment)))
+                    .single() as TextElement
+
+                var searchFrom = 0
+
+                for (token in tokenized.segments) {
+                    // Readium's tokenizer preserves the exact source substring for each token.
+                    val start = segment.text.indexOf(token.text, startIndex = searchFrom)
+
+                    check(start >= 0) { "Token does not belong to its source segment." }
+
+                    searchFrom = start + token.text.length
+
+                    utterance(token.text, token.locator, token.language)?.let { utterance ->
+                        add(LocatedUtterance(utterance, (elementOffset + start) until (elementOffset + searchFrom)))
+                    }
+                }
+
+                elementOffset += segment.text.length
+            }
+        }
+    }
+
+    private data class LocatedUtterance(val utterance: Utterance, val range: IntRange)
+
+    private fun String.indexOfFirstFrom(start: Int, predicate: (Char) -> Boolean): Int {
+        for (index in start.coerceAtLeast(0) until length) {
+            if (predicate(this[index])) {
+                return index
+            }
+        }
+
+        return -1
+    }
+
+    private fun utterance(text: String, locator: Locator, language: Language? = null): Utterance? {
+        if (!text.any { it.isLetterOrDigit() }) {
+            return null
+        }
+
+        val resourceIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
+            ?: throw IllegalStateException("Content Element cannot be found in readingOrder.")
+
+        return Utterance(
+            utterance = text,
+            resourceIndex = resourceIndex,
+            locations = locator.locations,
+            text = locator.text,
+            language = language
+        )
+    }
+
+    /**
      * Splits a publication [Content.Element] item into the utterances to be spoken.
      */
     private fun Content.Element.utterances(): List<Utterance> {
-        fun utterance(text: String, locator: Locator, language: Language? = null): Utterance? {
-            if (!text.any { it.isLetterOrDigit() }) {
-                return null
-            }
-
-            val resourceIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
-                ?: throw IllegalStateException("Content Element cannot be found in readingOrder.")
-
-            return Utterance(
-                utterance = text,
-                resourceIndex = resourceIndex,
-                locations = locator.locations,
-                text = locator.text,
-                language = language
-            )
-        }
-
         return when (this) {
             is Content.TextElement -> {
                 segments.mapNotNull { segment ->
