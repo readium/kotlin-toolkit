@@ -141,6 +141,8 @@ val ttsNavigator = ttsNavigatorFactory.createNavigator(
 )
 ```
 
+To start from a particular sentence in HTML, pass a locator containing a valid `locations.domRange.start` to `initialLocator` or `TtsNavigator.go(locator)`. The start point's `cssSelector`, direct-child `textNodeIndex`, and UTF-16 `charOffset` select the sentence; without a DOM range, navigation retains its normal element-level behavior.
+
 ### Highlighting the currently spoken utterance
 
 To highlight the current utterance on the page, you can apply a `Decoration` on the utterance locator if the visual navigator implements `DecorableNavigator`.

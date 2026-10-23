@@ -80,11 +80,20 @@ internal class TtsPlayer<
             )
         }
 
+        /**
+         * Loads the current utterance before looking backward, so a pending DOM seek is applied.
+         * Restores the cursor after reading the preceding utterance, then prefetches the next one.
+         */
         private suspend fun TtsUtteranceIterator.startContext(): UtteranceWindow? {
-            val previousUtterance = previous()
             val currentUtterance = next()
 
             val startWindow = if (currentUtterance != null) {
+                val previousUtterance = previous()
+                if (previousUtterance != null) {
+                    // The iterator's cursor points at the previous utterance, including
+                    // when it was loaded from another content element.
+                    next()
+                }
                 UtteranceWindow(
                     previousUtterance = previousUtterance,
                     currentUtterance = currentUtterance,
@@ -92,7 +101,7 @@ internal class TtsPlayer<
                     ended = false
                 )
             } else {
-                val actualCurrentUtterance = previousUtterance ?: return null
+                val actualCurrentUtterance = previous() ?: return null
                 val actualPreviousUtterance = previous()
 
                 // Go back to the end of the iterator.
@@ -509,6 +518,7 @@ internal class TtsPlayer<
         }
     }
 
+    /** Rebuilds the utterance window and publishes the selected position, even while paused. */
     private suspend fun resetContext() {
         val startContext = try {
             contentIterator.startContext()
@@ -517,6 +527,7 @@ internal class TtsPlayer<
             return
         }
         utteranceWindow = checkNotNull(startContext)
+        utteranceMutable.value = utteranceWindow.currentUtterance.ttsPlayerUtterance()
         if (utteranceWindow.nextUtterance == null && utteranceWindow.ended) {
             onEndReached()
         }
