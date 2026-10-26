@@ -179,7 +179,10 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
         val itemIndex = readingOrder.items.indexOfFirst { it.href == locator.href }
             .takeUnless { it == -1 }
             ?: return false
-        val position = locator.locations.time ?: Duration.ZERO
+        val position = locator.locations.time
+            ?: locator.locations.progression?.coerceIn(0.0, 1.0)
+                ?.let { progression -> readingOrder.items[itemIndex].duration?.times(progression) }
+            ?: Duration.ZERO
         Timber.v("Go to locator $locator")
         audioEngine.skipTo(itemIndex, position)
         return true
