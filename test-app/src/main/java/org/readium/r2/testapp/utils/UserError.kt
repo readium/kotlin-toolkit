@@ -14,8 +14,8 @@ import androidx.appcompat.app.AlertDialog
 import com.google.android.material.snackbar.Snackbar
 import java.text.DateFormat
 import java.util.Date
+import kotlin.time.Instant
 import org.readium.r2.shared.util.Error
-import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.toDebugDescription
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.utils.extensions.createShareIntent
