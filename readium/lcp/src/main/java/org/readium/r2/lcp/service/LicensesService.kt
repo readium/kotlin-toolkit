@@ -358,21 +358,19 @@ internal class LicensesService(
         validation.validate(LicenseValidation.Document.license(initialData)) { documents, error ->
             documents?.let {
                 Timber.d("validated documents $it")
-                try {
-                    documents.getContext()
-                    launch {
-                        completion(
-                            License(
-                                documents = it,
-                                validation = validation,
-                                licenses = this@LicensesService.licenses,
-                                device = this@LicensesService.device,
-                                httpClient = this@LicensesService.httpClient
-                            )
+                // Note: the license context is not eagerly validated here, to be able to return a
+                // `License` even when the license is expired (e.g. to renew it). Any status error
+                // will be thrown when calling `License.decrypt()`, mirroring the Swift toolkit.
+                launch {
+                    completion(
+                        License(
+                            documents = it,
+                            validation = validation,
+                            licenses = this@LicensesService.licenses,
+                            device = this@LicensesService.device,
+                            httpClient = this@LicensesService.httpClient
                         )
-                    }
-                } catch (e: Exception) {
-                    throw e
+                    )
                 }
             }
             error?.let { throw error }
