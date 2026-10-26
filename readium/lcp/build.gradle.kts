@@ -11,6 +11,10 @@ plugins {
 
 android {
     namespace = "org.readium.r2.lcp"
+
+    defaultConfig {
+        consumerProguardFiles("consumer-rules.pro")
+    }
 }
 
 kotlin {
