@@ -9,11 +9,15 @@
 package org.readium.r2.navigator.epub
 
 import android.app.Application
+import android.content.res.Resources
 import android.os.PatternMatcher
+import android.util.TypedValue
 import android.webkit.MimeTypeMap
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
+import androidx.annotation.AnyRes
 import androidx.webkit.WebViewAssetLoader
+import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.navigator.epub.css.ReadiumCss
@@ -35,6 +39,7 @@ import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.StringResource
 import org.readium.r2.shared.util.resource.fallback
 import org.readium.r2.shared.util.toAbsoluteUrl
+import org.readium.r2.shared.util.toUri
 
 /**
  * Serves the publication resources and application assets in the EPUB navigator web views.
@@ -44,18 +49,44 @@ internal class WebViewServer(
     private val application: Application,
     private val publication: Publication,
     servedAssets: List<String>,
+    servedAndroidResources: List<Int>,
     private val disableSelectionWhenProtected: Boolean,
     private val onResourceLoadFailed: (Url, ReadError) -> Unit,
 ) {
     companion object {
         const val PACKAGE_HOSTNAME = "readium_package"
         const val ASSETS_HOSTNAME = "readium_assets"
+        const val RESOURCES_HOSTNAME = "readium_resources"
 
         val packageBaseHref = AbsoluteUrl("https://$PACKAGE_HOSTNAME/")!!
         val assetsBaseHref = AbsoluteUrl("https://$ASSETS_HOSTNAME/")!!
+        val resourcesBaseHref = AbsoluteUrl("https://$RESOURCES_HOSTNAME/")!!
 
         fun assetUrl(path: String): Url? =
             Url.fromDecodedPath(path)?.let { assetsBaseHref.resolve(it) }
+
+        fun androidResourceUrl(resources: Resources, @AnyRes resId: Int): Url? =
+            try {
+                val value = TypedValue().also {
+                    resources.getValue(resId, it, true)
+                }
+
+                val filePath = value.string?.toString()
+                    ?.takeIf { it.startsWith("res/") }
+                    ?: return null
+
+                val extension = File(filePath).extension
+                    .takeIf { it.isNotEmpty() }
+                    ?.let { ".$it" }
+                    .orEmpty()
+
+                val type = resources.getResourceTypeName(resId)
+                val name = resources.getResourceEntryName(resId)
+
+                Url.fromDecodedPath("$type/$name$extension")?.let { resourcesBaseHref.resolve(it) }
+            } catch (_: Resources.NotFoundException) {
+                null
+            }
     }
 
     /**
@@ -65,6 +96,7 @@ internal class WebViewServer(
         when (val url = link.url()) {
             is AbsoluteUrl ->
                 url
+
             is RelativeUrl ->
                 (publication.baseUrl ?: packageBaseHref).resolve(link.url())
         }
@@ -78,6 +110,7 @@ internal class WebViewServer(
                 val href = packageBaseHref.relativize(url)
                 publication.linkWithHref(href)
             }
+
             else -> {
                 publication.linkWithHref(url)
                     ?: publication.baseUrl?.relativize(url)
@@ -101,27 +134,30 @@ internal class WebViewServer(
      *
      * https://readium_package/ serves the publication resources through its container.
      * https://readium_assets/ serves the application assets.
+     * https://readium_resources/ serves the application Android resources.
      */
     fun shouldInterceptRequest(request: WebResourceRequest, css: ReadiumCss): WebResourceResponse? {
-        val path = request.url.path ?: return null
         val hostname = request.url.host ?: return null
         val requestUrl = request.url.toAbsoluteUrl() ?: return null
         val range = HttpHeaders(request.requestHeaders).range
 
         return when (hostname) {
             ASSETS_HOSTNAME -> {
-                if (isServedAsset(path.removePrefix("/"))) {
-                    // Request is for a known asset.
-                    assetsLoader.shouldInterceptRequest(request.url)
-                        ?.apply { allowCors() }
-                } else {
-                    val error = ReadError.Decoding(
-                        "Attempted to load an unknown asset from $requestUrl"
-                    )
-                    onResourceLoadFailed(requestUrl, error)
-                    serveErrorResponse() // Request is for an unknown asset.
-                }
+                serveAppResource(
+                    url = requestUrl,
+                    loader = assetsLoader,
+                    isAllowed = { path -> isServedAsset(path.removePrefix("/")) },
+                )
             }
+
+            RESOURCES_HOSTNAME -> {
+                serveAppResource(
+                    url = requestUrl,
+                    loader = resourcesLoader,
+                    isAllowed = { path -> isServedAndroidResource(path.removePrefix("/")) },
+                )
+            }
+
             else -> { // Request is for a publication resource
                 servePublicationResourceWithUrl(
                     // Drop anchor because it is meant to be interpreted by the client.
@@ -131,6 +167,25 @@ internal class WebViewServer(
                 )
             }
         }
+    }
+
+    private inline fun serveAppResource(
+        url: AbsoluteUrl,
+        loader: WebViewAssetLoader,
+        isAllowed: (path: String) -> Boolean,
+    ): WebResourceResponse? {
+        val path = url.path ?: return null
+
+        if (isAllowed(path)) {
+            return loader.shouldInterceptRequest(url.toUri())
+                ?.apply { allowCors() }
+        }
+
+        val error = ReadError.Decoding(
+            "Attempted to load an unknown app resource from $url"
+        )
+        onResourceLoadFailed(url, error)
+        return serveErrorResponse() // Request is for an app resource.
     }
 
     /**
@@ -272,9 +327,23 @@ internal class WebViewServer(
     private val servedAssetPatterns: List<PatternMatcher> =
         servedAssets.map { PatternMatcher(it, PatternMatcher.PATTERN_SIMPLE_GLOB) }
 
+    private fun isServedAndroidResource(path: String): Boolean =
+        path in servedAndroidResourcePaths
+
+    private val servedAndroidResourcePaths: Set<String> =
+        servedAndroidResources.mapNotNull {
+            androidResourceUrl(application.resources, it)?.path?.removePrefix("/")
+        }.toHashSet()
+
     private val assetsLoader =
         WebViewAssetLoader.Builder()
             .setDomain(ASSETS_HOSTNAME)
             .addPathHandler("/", WebViewAssetLoader.AssetsPathHandler(application))
+            .build()
+
+    private val resourcesLoader =
+        WebViewAssetLoader.Builder()
+            .setDomain(RESOURCES_HOSTNAME)
+            .addPathHandler("/", WebViewAssetLoader.ResourcesPathHandler(application))
             .build()
 }

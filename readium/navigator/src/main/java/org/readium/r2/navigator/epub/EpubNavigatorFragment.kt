@@ -8,6 +8,7 @@
 
 package org.readium.r2.navigator.epub
 
+import android.content.res.Resources
 import android.graphics.PointF
 import android.graphics.RectF
 import android.os.Bundle
@@ -20,6 +21,7 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
+import androidx.annotation.AnyRes
 import androidx.collection.forEach
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.os.BundleCompat
@@ -154,6 +156,14 @@ public class EpubNavigatorFragment internal constructor(
         var servedAssets: List<String>,
 
         /**
+         * Android file resource IDs available to EPUB resources under
+         * https://readium_resources/, for example `R.font.my_font`.
+         * Non-file-backed or unknown resource IDs are ignored.
+         */
+        @ExperimentalReadiumApi
+        var servedAndroidResources: List<Int>,
+
+        /**
          * Readium CSS reading system settings.
          *
          * See https://readium.org/readium-css/docs/CSS19-api.html#reading-system-styles
@@ -220,8 +230,10 @@ public class EpubNavigatorFragment internal constructor(
             disablePageTurnsWhileScrolling: Boolean = false,
             selectionActionModeCallback: ActionMode.Callback? = null,
             shouldApplyInsetsPadding: Boolean? = true,
+            servedAndroidResources: List<Int> = emptyList(),
         ) : this(
             servedAssets = servedAssets,
+            servedAndroidResources = servedAndroidResources,
             readiumCssRsProperties = readiumCssRsProperties,
             decorationTemplates = decorationTemplates,
             disablePageTurnsWhileScrolling = disablePageTurnsWhileScrolling,
@@ -1149,6 +1161,17 @@ public class EpubNavigatorFragment internal constructor(
          */
         public fun assetUrl(path: String): Url? =
             WebViewServer.assetUrl(path)
+
+        /**
+         * Returns a URL to an Android file resource served in the EPUB web views,
+         * such as a font in `res/font`.
+         *
+         * The resource must also be allowed by [Configuration.servedAndroidResources].
+         *
+         * @return `null` if [resId] does not identify a file-backed resource.
+         */
+        public fun androidResourceUrl(resources: Resources, @AnyRes resId: Int): Url? =
+            WebViewServer.androidResourceUrl(resources, resId)
     }
 }
 

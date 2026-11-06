@@ -28,6 +28,7 @@ import org.readium.r2.navigator.DecorableNavigator
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.epub.*
 import org.readium.r2.navigator.epub.css.FontStyle
+import org.readium.r2.navigator.epub.css.FontWeight
 import org.readium.r2.navigator.html.HtmlDecorationTemplate
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.navigator.html.toCss
@@ -37,6 +38,7 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.epub.pageList
 import org.readium.r2.testapp.LITERATA
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.ROBOTO_MONO
 import org.readium.r2.testapp.reader.preferences.UserPreferencesViewModel
 import org.readium.r2.testapp.search.SearchFragment
 
@@ -74,7 +76,7 @@ class EpubReaderFragment : VisualReaderFragment() {
                     // To customize the text selection menu.
                     selectionActionModeCallback = customSelectionActionModeCallback
 
-                    // App assets which will be accessible from the EPUB resources.
+                    // App assets accessible from the EPUB resources.
                     // You can use simple glob patterns, such as "images/.*" to allow several
                     // assets in one go.
                     servedAssets = listOf(
@@ -82,6 +84,13 @@ class EpubReaderFragment : VisualReaderFragment() {
                         "fonts/.*",
                         // Icon for the annotation side mark, see [annotationMarkTemplate].
                         "annotation-icon.svg"
+                    )
+                    // For Roboto Mono font files in Android resources.
+                    servedAndroidResources = listOf(
+                        R.font.roboto_mono_regular,
+                        R.font.roboto_mono_italic,
+                        R.font.roboto_mono_bold,
+                        R.font.roboto_mono_bold_italic
                     )
 
                     // Enable experimental decorations positioning that places highlights behind
@@ -107,6 +116,39 @@ class EpubReaderFragment : VisualReaderFragment() {
                             addSource("fonts/Literata-Italic-VariableFont_opsz,wght.ttf")
                             setFontStyle(FontStyle.ITALIC)
                             setFontWeight(200..900)
+                        }
+                    }
+
+                    // Declare a custom font family from Android res/font files.
+                    val resources = requireContext().resources
+                    addFontFamilyDeclaration(FontFamily.ROBOTO_MONO) {
+                        addFontFace {
+                            addSource(
+                                requireNotNull(EpubNavigatorFragment.androidResourceUrl(resources, R.font.roboto_mono_regular))
+                            )
+                            setFontWeight(FontWeight.NORMAL)
+                            setFontStyle(FontStyle.NORMAL)
+                        }
+                        addFontFace {
+                            addSource(
+                                requireNotNull(EpubNavigatorFragment.androidResourceUrl(resources, R.font.roboto_mono_italic))
+                            )
+                            setFontWeight(FontWeight.NORMAL)
+                            setFontStyle(FontStyle.ITALIC)
+                        }
+                        addFontFace {
+                            addSource(
+                                requireNotNull(EpubNavigatorFragment.androidResourceUrl(resources, R.font.roboto_mono_bold))
+                            )
+                            setFontWeight(FontWeight.BOLD)
+                            setFontStyle(FontStyle.NORMAL)
+                        }
+                        addFontFace {
+                            addSource(
+                                requireNotNull(EpubNavigatorFragment.androidResourceUrl(resources, R.font.roboto_mono_bold_italic))
+                            )
+                            setFontWeight(FontWeight.BOLD)
+                            setFontStyle(FontStyle.ITALIC)
                         }
                     }
                 }
