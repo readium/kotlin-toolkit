@@ -702,9 +702,10 @@ class HtmlResourceContentIteratorTest {
                     <img src="chart.png" alt="A chart"/>
                     <figcaption>Figure caption</figcaption>
                 </figure>
-                <aside epub:type="footnote" role="doc-footnote"><p>Aside footnote</p></aside>
+                <aside role="doc-footnote"><p>Aside footnote</p></aside>
                 <ol epub:type="endnotes">
-                    <li epub:type="footnote">List footnote</li>
+                    <li epub:type="footnote
+                        rearnote">List footnote</li>
                 </ol>
             </body>
             </html>
@@ -716,7 +717,7 @@ class HtmlResourceContentIteratorTest {
                 listOf("figure"),
                 listOf("caption", "figure"),
                 listOf("footnote", "aside"),
-                listOf("footnote", "endnotes")
+                listOf("footnote", "rearnote", "endnotes")
             ),
             iterator(html).elements().map { it.attributes(ROLE) }
         )

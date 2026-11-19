@@ -529,14 +529,16 @@ private val Node.language: String? get() =
  */
 private val Element.roles: List<String> get() =
     buildList {
-        addAll(attr("epub:type").split(" ").filter { it.isNotBlank() })
-        addAll(attr("role").split(" ").filter { it.startsWith("doc-") }.map { it.removePrefix("doc-") })
+        addAll(attr("epub:type").split(whitespace).filter { it.isNotBlank() })
+        addAll(attr("role").split(whitespace).filter { it.startsWith("doc-") }.map { it.removePrefix("doc-") })
         when (normalName()) {
             "aside" -> add("aside")
             "figure" -> add("figure")
             "figcaption" -> add("caption")
         }
     }.distinct()
+
+private val whitespace = Regex("\\s+")
 
 private fun Node.srcRelativeToHref(baseUrl: Url): Url? =
     attr("src")
