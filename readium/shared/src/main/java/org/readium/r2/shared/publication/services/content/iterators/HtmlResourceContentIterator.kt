@@ -273,12 +273,20 @@ public class HtmlResourceContentIterator internal constructor(
         private data class ParentElement(
             val element: Element,
             val cssSelector: String?,
+            val roles: List<String>,
         ) {
             constructor(element: Element) : this(
                 element = element,
-                cssSelector = tryOrLog { element.cssSelector() }
+                cssSelector = tryOrLog { element.cssSelector() },
+                roles = element.roles
             )
         }
+
+        /** Roles of the current block ancestors, nearest first. */
+        private fun roleAttributes(): List<Attribute<String>> =
+            breadcrumbs.asReversed()
+                .flatMap { it.roles }
+                .map { Attribute(AttributeKey.ROLE, it) }
 
         @OptIn(DelicateReadiumApi::class)
         override fun head(node: Node, depth: Int) {
@@ -322,6 +330,7 @@ public class HtmlResourceContentIterator internal constructor(
                                         if (alt != null) {
                                             add(Attribute(AttributeKey.ACCESSIBILITY_LABEL, alt))
                                         }
+                                        addAll(roleAttributes())
                                     }
                                 )
                             )
@@ -355,14 +364,14 @@ public class HtmlResourceContentIterator internal constructor(
                                     AudioElement(
                                         locator = elementLocator,
                                         embeddedLink = link,
-                                        attributes = emptyList()
+                                        attributes = roleAttributes()
                                     )
                                 )
                                 "video" -> elements.add(
                                     VideoElement(
                                         locator = elementLocator,
                                         embeddedLink = link,
-                                        attributes = emptyList()
+                                        attributes = roleAttributes()
                                     )
                                 )
                                 else -> {}
@@ -435,7 +444,8 @@ public class HtmlResourceContentIterator internal constructor(
                         )
                     ),
                     role = TextElement.Role.Body,
-                    segments = segmentsAcc.toList()
+                    segments = segmentsAcc.toList(),
+                    attributes = roleAttributes()
                 )
             )
             elementRawTextAcc = ""
@@ -511,6 +521,22 @@ private val Node.language: String? get() =
     attr("xml:lang").takeUnless { it.isBlank() }
         ?: attr("lang").takeUnless { it.isBlank() }
         ?: parent()?.language
+
+/**
+ * Semantic roles declared by this element, named after the Guided Navigation role registry.
+ *
+ * EPUB types and DPUB-ARIA roles mostly share the registry names, so they are kept as-is.
+ */
+private val Element.roles: List<String> get() =
+    buildList {
+        addAll(attr("epub:type").split(" ").filter { it.isNotBlank() })
+        addAll(attr("role").split(" ").filter { it.startsWith("doc-") }.map { it.removePrefix("doc-") })
+        when (normalName()) {
+            "aside" -> add("aside")
+            "figure" -> add("figure")
+            "figcaption" -> add("caption")
+        }
+    }.distinct()
 
 private fun Node.srcRelativeToHref(baseUrl: Url): Url? =
     attr("src")

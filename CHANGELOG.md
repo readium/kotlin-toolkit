@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file. Take a look
 
 ## [Unreleased]
 
+### Added
+
+#### Shared
+
+* Elements returned by the experimental `ContentService` for HTML resources now carry the semantic roles of their block ancestors (e.g. `footnote`, `aside`, `caption`) in the new `Content.AttributeKey.ROLE` attribute, so a text-to-speech app can skip notes, captions or sidebars.
+
 ### Fixed
 
 #### Shared

@@ -15,6 +15,7 @@ import org.readium.r2.shared.publication.services.content.Content
 import org.readium.r2.shared.publication.services.content.Content.Attribute
 import org.readium.r2.shared.publication.services.content.Content.AttributeKey.Companion.ACCESSIBILITY_LABEL
 import org.readium.r2.shared.publication.services.content.Content.AttributeKey.Companion.LANGUAGE
+import org.readium.r2.shared.publication.services.content.Content.AttributeKey.Companion.ROLE
 import org.readium.r2.shared.publication.services.content.Content.TextElement
 import org.readium.r2.shared.publication.services.content.Content.TextElement.Segment
 import org.readium.r2.shared.util.Language
@@ -556,7 +557,7 @@ class HtmlResourceContentIteratorTest {
                             attributes = emptyList()
                         )
                     ),
-                    attributes = emptyList()
+                    attributes = listOf(Attribute(ROLE, "aside"))
                 ),
                 TextElement(
                     locator = locator(
@@ -578,7 +579,7 @@ class HtmlResourceContentIteratorTest {
                             attributes = emptyList()
                         )
                     ),
-                    attributes = emptyList()
+                    attributes = listOf(Attribute(ROLE, "aside"))
                 )
             ),
             iterator(html).elements()
@@ -687,6 +688,37 @@ class HtmlResourceContentIteratorTest {
                 )
             ),
             iterator(html).elements()
+        )
+    }
+
+    @Test
+    fun `elements carry the semantic roles of their block ancestors`() = runTest {
+        val html = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
+            <body>
+                <p>Body text</p>
+                <figure>
+                    <img src="chart.png" alt="A chart"/>
+                    <figcaption>Figure caption</figcaption>
+                </figure>
+                <aside epub:type="footnote" role="doc-footnote"><p>Aside footnote</p></aside>
+                <ol epub:type="endnotes">
+                    <li epub:type="footnote">List footnote</li>
+                </ol>
+            </body>
+            </html>
+            """
+
+        assertEquals(
+            listOf(
+                emptyList(),
+                listOf("figure"),
+                listOf("caption", "figure"),
+                listOf("footnote", "aside"),
+                listOf("footnote", "endnotes")
+            ),
+            iterator(html).elements().map { it.attributes(ROLE) }
         )
     }
 }

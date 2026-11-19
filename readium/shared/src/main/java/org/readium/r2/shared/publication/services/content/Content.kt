@@ -181,6 +181,15 @@ public interface Content {
                 "accessibilityLabel"
             )
             public val LANGUAGE: AttributeKey<Language> = AttributeKey<Language>("language")
+
+            /**
+             * Semantic role of the element or of one of its ancestors, such as `footnote`,
+             * `aside` or `caption`. An element can have several roles, nearest ancestor first.
+             *
+             * Values follow the Guided Navigation role registry:
+             * https://github.com/readium/guided-navigation/blob/main/roles.md
+             */
+            public val ROLE: AttributeKey<String> = AttributeKey<String>("role")
         }
     }
 
