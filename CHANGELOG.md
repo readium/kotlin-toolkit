@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file. Take a look
 
 ## [Unreleased]
 
+### Changed
+
+#### LCP
+
+* LCP data models no longer expose `org.json` in their constructors. Some constructor properties have changed or been removed as part of this migration. Deprecated shims have been provided where possible to ease migration.
+
 ### Fixed
 
 #### Shared
@@ -26,10 +32,6 @@ All notable changes to this project will be documented in this file. Take a look
 * The EPUB navigator now reports the image under a tap through the new experimental `TapEvent.targetElement` property, making it easy to build features such as a full-screen image viewer. See the [EPUB image viewer guide](docs/guides/navigator/epub-image-viewer.md).
 
 ### Changed
-
-#### LCP
-
-* LCP data models no longer expose `org.json` in their constructors. Some constructor properties have changed or been removed as part of this migration. Deprecated shims have been provided where possible to ease migration.
 
 #### Navigator
 

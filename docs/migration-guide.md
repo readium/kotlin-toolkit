@@ -2,9 +2,7 @@
 
 All migration steps necessary in reading apps to upgrade to major versions of the Kotlin Readium toolkit will be documented in this file.
 
-<!-- ## Unreleased -->
-
-## 3.4.0
+## Unreleased
 
 ### LCP Models Serialization Changes
 
@@ -13,6 +11,8 @@ The LCP models (e.g., `LicenseDocument`, `StatusDocument`, `User`, `Link`) have 
 - The `json: JSONObject` properties in data classes (like `User`, `Rights`, etc.) are now deprecated.
 - The `User.encrypted` property type has changed from `MutableList<String>` to `List<String>`.
 - The `LicenseDocument` and `StatusDocument` primary constructors now take `jsonString: String` instead of `org.json.JSONObject`. The `json` properties are still available but return a deprecated `JSONObject`.
+
+## 3.4.0
 
 ### Breaking changes with the PDFium adapter
 
