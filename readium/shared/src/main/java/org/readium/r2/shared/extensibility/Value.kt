@@ -39,7 +39,7 @@ import org.readium.r2.shared.InternalReadiumApi
 public sealed interface Value : Parcelable {
     public val boolean: Boolean? get() = (this as? BooleanValue)?.value
     public val string: String? get() = (this as? StringValue)?.value
-    public val integer: Long? get() = (this as? IntValue)?.value
+    public val long: Long? get() = (this as? IntValue)?.value
     public val int: Int? get() = (this as? IntValue)?.toInt()
     public val double: Double?
         get() = when (this) {

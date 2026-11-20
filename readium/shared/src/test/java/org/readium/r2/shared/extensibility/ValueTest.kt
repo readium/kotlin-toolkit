@@ -29,7 +29,7 @@ class ValueTest {
         assertFalse(boolVal.isNull)
 
         val intVal: Value = IntValue(42L)
-        assertEquals(42L, intVal.integer)
+        assertEquals(42L, intVal.long)
         assertEquals(42, intVal.int)
         assertEquals(42.0, intVal.double!!, 0.001)
 
